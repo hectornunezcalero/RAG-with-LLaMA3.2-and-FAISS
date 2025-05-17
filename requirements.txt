@@ -1,0 +1,7 @@
+sentence-transformers
+faiss-cpu
+PyMuPDF
+requests
+langchain
+llama-cpp-python
+flask
