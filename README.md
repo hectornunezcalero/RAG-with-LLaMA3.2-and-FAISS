@@ -1,2 +1,2 @@
-# Proyecto local de prueba con PDFs.
+# Pasos para el funcionamiento de la IA.
 
