@@ -1,11 +1,14 @@
-# Ignorar entorno virtual
+# entorno virtual
 venv/
 
-# Ignorar archivos grandes o de modelos
+# archivos grandes o de modelos
 *.gguf
 *.dll
 *.lib
 
-# Ignorar cachés de Python
+# cachés de Python
 __pycache__/
 *.pyc
+
+# información del proyecto "no relevante"
+.idea
