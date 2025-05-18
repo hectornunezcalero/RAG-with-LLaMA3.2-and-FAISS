@@ -4,7 +4,6 @@
 #                                                           #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
-
 from xmlrpc.client import ResponseError
 import requests
 import logging
@@ -13,7 +12,7 @@ from tkinter import ttk, scrolledtext
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 
-# Procesador del POST en json
+# Cliente que hace las peticiones HTTP al servidor
 class Llama3CLI:
     def __init__(self, api_key, server_ip):
         self.api_key = api_key
@@ -37,23 +36,26 @@ class Llama3CLI:
             logging.error(f"Error {response.status_code}: {response.text}")
             return {"response": "Error en la respuesta del servidor", "status_code": response.status_code}
 
-# Interfaz gráfica para la consulta del cliente
+# Interfaz gráfica para lanzar preguntas al sistema RAG
 class Llama3GUI:
     def __init__(self, llama_client):
         self.client = llama_client
         self.window = tk.Tk()
         self.window.title("Llama3.2 - RAG Assistant")
 
+        # Campo para escribir la pregunta
         self.input_text = scrolledtext.ScrolledText(self.window, height=10, width=70)
         self.input_text.grid(row=0, column=0, columnspan=2, pady=10, padx=10)
 
+        # Botón para enviar la pregunta
         self.send_button = tk.Button(self.window, text="Send Request", command=self.send_request)
         self.send_button.grid(row=1, column=0, columnspan=2, pady=5, padx=10)
 
+        # Área donde se muestra la respuesta del modelo
         self.output_text = scrolledtext.ScrolledText(self.window, height=20, width=70)
         self.output_text.grid(row=2, column=0, columnspan=2, pady=10, padx=10)
 
-    # Manejo de eventos para el botón de envío
+    # Envío de la pregunta al servidor
     def send_request(self):
         content = self.input_text.get('1.0', tk.END).strip()
         if not content:
@@ -69,7 +71,7 @@ class Llama3GUI:
     def run(self):
         self.window.mainloop()
 
-# Ejecutar GUI
+# Lanzar interfaz
 if __name__ == "__main__":
     llama_client = Llama3CLI(api_key="<MASTERKEY>", server_ip="127.0.0.1")
     app = Llama3GUI(llama_client)
