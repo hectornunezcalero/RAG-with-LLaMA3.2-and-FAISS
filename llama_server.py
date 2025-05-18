@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from llama_cpp import Llama
 from langchain_community.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 import faiss
 import pickle
 app = Flask(__name__)
@@ -29,7 +29,8 @@ def handle_request():
 
     print(f"\nPregunta recibida: {query}")
     docs = db.similarity_search(query, k=3)
-    print(f"Se encontraron {len(docs)} chunks relevantes para la consulta: '{query}'")
+    print(f"Se encontraron {len(docs)} chunks relevantes para la consulta: '{query}'"
+          f"\nProcesando respuesta...\n")
     contexto = "\n\n".join([d.page_content for d in docs])
     prompt = (f"Eres un experto en investigación sobre información de tus documentos. "
               f"Usa este contexto para responder la pregunta del usuario:\n\n{contexto}\n\nPregunta: {query}\nRespuesta:")

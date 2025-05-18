@@ -25,6 +25,7 @@ class Llama3CLI:
         url = f"http://{self.base_ip}:{LLAMA_PORT}/request"
 
         try:
+            print(f"Conectándose al servidor y consultando sobre: {content}")
             response = requests.post(url, json=data, headers=headers)
         except Exception as ex:
             logging.error(f"Connection error: {ex}")
@@ -43,9 +44,15 @@ class Llama3GUI:
         self.window = tk.Tk()
         self.window.title("Llama3.2 - RAG Assistant")
 
+        # Configurar la ventana para que permita redimensionamiento dinámico
+        self.window.grid_columnconfigure(0, weight=1)
+        self.window.grid_columnconfigure(1, weight=1)
+        self.window.grid_rowconfigure(0, weight=1)
+        self.window.grid_rowconfigure(2, weight=1)
+
         # Campo para escribir la pregunta
         self.input_text = scrolledtext.ScrolledText(self.window, height=10, width=70)
-        self.input_text.grid(row=0, column=0, columnspan=2, pady=10, padx=10)
+        self.input_text.grid(row=0, column=0, columnspan=2, pady=10, padx=10, sticky="nsew")
 
         # Botón para enviar la pregunta
         self.send_button = tk.Button(self.window, text="Send Request", command=self.send_request)
@@ -53,7 +60,7 @@ class Llama3GUI:
 
         # Área donde se muestra la respuesta del modelo
         self.output_text = scrolledtext.ScrolledText(self.window, height=20, width=70)
-        self.output_text.grid(row=2, column=0, columnspan=2, pady=10, padx=10)
+        self.output_text.grid(row=2, column=0, columnspan=2, pady=10, padx=10, sticky="nsew")
 
     # Envío de la pregunta al servidor
     def send_request(self):
@@ -64,6 +71,7 @@ class Llama3GUI:
 
         response_data = self.client.process_request({"content": [content]})
         respuesta = response_data.get("response", "Respuesta vacía")
+        print("Consulta respondida sobre:", content)
 
         self.output_text.delete('1.0', tk.END)
         self.output_text.insert(tk.END, respuesta)
