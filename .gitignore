@@ -1,12 +1,12 @@
-# entorno virtual
+# el entorno virtual
 venv/
 
-# archivos grandes o de modelos
+# los archivos grandes / de modelos
 *.gguf
 *.dll
 *.lib
 
-# cachés de Python
+# las cachés de Python
 __pycache__/
 *.pyc
 
