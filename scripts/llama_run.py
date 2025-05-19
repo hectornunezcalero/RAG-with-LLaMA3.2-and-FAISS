@@ -25,7 +25,7 @@ class Llama3CLI:
         url = f"http://{self.base_ip}:{LLAMA_PORT}/request"
 
         try:
-            print(f"Conectándose al servidor y consultando sobre: {content}")
+            print(f"Conectándose al servidor")
             response = requests.post(url, json=data, headers=headers)
         except Exception as ex:
             logging.error(f"Connection error: {ex}")
