@@ -20,3 +20,5 @@ txtdata/*
 !txtdata/.gitkeep
 vector_db/*
 !vector_db/.gitkeep
+models/*
+!models/.gitkeep
