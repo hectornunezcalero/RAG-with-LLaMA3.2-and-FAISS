@@ -28,9 +28,13 @@ def handle_request():
     max_tokens = int(data.get("max_tokens", 1024))
 
     print(f"\nPregunta recibida: {query}")
-    docs = db.similarity_search(query, k=3)
-    print(f"Se encontraron {len(docs)} chunks relevantes para la consulta: '{query}'"
-          f"\nProcesando respuesta...\n")
+    docs = db.similarity_search(query, k=1)
+    print(f"Se encontraron {len(docs)} chunks relevantes para la consulta: '{query}'")
+    for i, doc in enumerate(docs, start=1):
+        inicio_chunk = " ".join(doc.page_content.split()[:20])  # Obtener las primeras 10 palabras de los tres chunks
+        print(f"Chunk {i}: {inicio_chunk}...")
+
+    print(f"\nProcesando respuesta...\n")
     contexto = "\n\n".join([d.page_content for d in docs])
     prompt = (f"Eres un experto en investigación sobre información de tus documentos. "
               f"Usa este contexto para responder la pregunta del usuario:\n\n{contexto}\n\nPregunta: {query}\nRespuesta:")

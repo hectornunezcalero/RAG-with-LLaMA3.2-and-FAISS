@@ -12,3 +12,8 @@ __pycache__/
 
 # información del proyecto "no relevante"
 .idea
+
+# documentación pdf, txt y Database
+pdfdata/*
+txtdata/*
+vector_db/*
