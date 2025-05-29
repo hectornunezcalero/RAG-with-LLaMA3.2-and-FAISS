@@ -10,12 +10,12 @@ Divide los textos en chunks, genera vectores para cada chunk utilizando un model
 <br>
 _python scripts/vectorizer.py_
 <br>
-## 3. Ejecución del servidor: llama_server.py
-Inicia un servidor Flask que utiliza la base de datos FAISS para realizar búsquedas de contexto y genera respuestas utilizando el modelo Llama.
+## 3. Ejecución del servidor: llama_server_local.py
+Inicia un servidor Flask que genera respuestas utilizando el modelo Llama3.2 3B.
 <br>
-_python llama_server.py_
+_python llama_server_local.py_
 <br>
-## 4. Ejecución del cliente: scripts/llama_run.py
-Proporciona una interfaz gráfica (GUI) para enviar preguntas al servidor y recibir respuestas generadas por el modelo.
+## 4. Ejecución del cliente: llama_cli_local.py
+Proporciona una interfaz gráfica (GUI) para enviar preguntas al servidor y recibir respuestas generadas por el modelo. Utiliza la base de datos FAISS para realizar recuperación de contexto
 <br>
-_python scripts/llama_run.py_
+_python llama_cli_local.py_
