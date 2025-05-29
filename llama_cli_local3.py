@@ -1,7 +1,7 @@
 import requests
 import logging
 import tkinter as tk
-from tkinter import scrolledtext
+from tkinter import ttk, scrolledtext, messagebox
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 import faiss
@@ -88,20 +88,59 @@ class Llama3GUI:
         self.client = Llama3CLI()
         self.window = tk.Tk()
         self.window.title("Llama3.2 - RAG Assistant")
+        self.window.geometry("900x700")
+        self.window.configure(bg="#f0f2f5")
 
-        self.window.grid_columnconfigure(0, weight=1)
-        self.window.grid_columnconfigure(1, weight=1)
-        self.window.grid_rowconfigure(0, weight=1)
-        self.window.grid_rowconfigure(2, weight=1)
+        self.build_interface()
 
-        self.input_text = scrolledtext.ScrolledText(self.window, height=10, width=70)
-        self.input_text.grid(row=0, column=0, columnspan=2, pady=10, padx=10, sticky="nsew")
+    def build_interface(self):
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure("TButton", font=('Segoe UI', 10), padding=6)
+        style.configure("TLabel", font=('Segoe UI', 10), background="#f0f2f5")
+        style.configure("TFrame", background="#f0f2f5")
 
-        self.send_button = tk.Button(self.window, text="Send Request", command=self.send_request)
-        self.send_button.grid(row=1, column=0, columnspan=2, pady=5, padx=10)
+        # Título
+        title = ttk.Label(self.window, text="🧠 Llama3.2 - RAG Assistant", font=("Segoe UI", 16, "bold"))
+        title.pack(pady=(20, 10))
 
-        self.output_text = scrolledtext.ScrolledText(self.window, height=20, width=70)
-        self.output_text.grid(row=2, column=0, columnspan=2, pady=10, padx=10, sticky="nsew")
+        # Frame principal
+        main_frame = ttk.Frame(self.window)
+        main_frame.pack(fill="both", expand=True, padx=20, pady=10)
+
+        # Pregunta
+        label_input = ttk.Label(main_frame, text="🔍 Escribe tu pregunta:")
+        label_input.pack(anchor="w")
+
+        self.input_text = scrolledtext.ScrolledText(main_frame, height=6, font=('Segoe UI', 10), wrap=tk.WORD)
+        self.input_text.pack(fill="x", pady=(5, 15))
+
+        # Botón de enviar - con estilo mejorado
+        self.send_button = tk.Button(
+            main_frame,
+            text="🚀 Enviar consulta",
+            font=('Segoe UI', 11, 'bold'),
+            bg="#4a90e2",
+            fg="white",
+            activebackground="#357ABD",
+            activeforeground="white",
+            relief=tk.FLAT,
+            padx=10,
+            pady=6,
+            cursor="hand2",
+            command=self.send_request
+        )
+        self.send_button.pack(pady=(0, 10))
+
+        # Separador
+        ttk.Separator(main_frame, orient="horizontal").pack(fill="x", pady=10)
+
+        # Respuesta
+        label_output = ttk.Label(main_frame, text="📬 Respuesta generada:")
+        label_output.pack(anchor="w")
+
+        self.output_text = scrolledtext.ScrolledText(main_frame, height=15, font=('Segoe UI', 10), wrap=tk.WORD, bg="#ffffff")
+        self.output_text.pack(fill="both", expand=True)
 
     def send_request(self):
         pregunta = self.input_text.get('1.0', tk.END).strip()
@@ -112,6 +151,7 @@ class Llama3GUI:
         respuesta = self.client.process_request(pregunta)
         print("Consulta respondida sobre:", pregunta)
         print("--------------------------")
+
         self.output_text.delete('1.0', tk.END)
         self.output_text.insert(tk.END, respuesta.get("response", "Sin respuesta."))
 
@@ -122,4 +162,3 @@ class Llama3GUI:
 if __name__ == "__main__":
     app = Llama3GUI()
     app.run()
-
