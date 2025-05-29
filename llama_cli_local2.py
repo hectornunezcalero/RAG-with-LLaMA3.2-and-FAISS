@@ -12,7 +12,7 @@ LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "127.0.0.1"
 API_KEY = "abc123"
 VECTOR_DB_PATH = "./vector_db"
-MAX_TOKENS = 1024
+MAX_TOKENS = 2048
 
 # Cargar base vectorial
 with open(f"{VECTOR_DB_PATH}/index.pkl", "rb") as f:
@@ -31,14 +31,25 @@ class Llama3CLI:
 
     def process_request(self, question: str):
         print(f"Resolviendo pregunta: {question}")
-        # Buscar contexto
-        docs = db.similarity_search(question, k=2)
+
+        # Recuperamos más chunks y filtramos los relevantes del mismo archivo
+        docs = db.similarity_search(question, k=3)
         print(f"Chunks rescatados por similitud: {len(docs)}")
-        contexto = "\n\n".join([d.page_content for d in docs])
+
+        MAX_CONTEXT_CHARS = 2048  # Ajusta según lo que tu servidor tolere
+        contexto = ""
+        for doc in docs:
+            if len(contexto) + len(doc.page_content) > MAX_CONTEXT_CHARS:
+                espacio_restante = MAX_CONTEXT_CHARS - len(contexto)
+                contexto += doc.page_content[:espacio_restante]
+                break
+            else:
+                contexto += doc.page_content + "\n\n"
 
         prompt = (f"Eres un asistente experto sobre la información de tus documentos. Usa el siguiente contexto y contesta a la pregunta:\n\n"
                   f"Contexto:\n{contexto}\n\n"
-                  f"La pregunta del usuario a contestar es:\n{question}\n\n, responde a ella claro y conciso")
+                  f"La pregunta del usuario a contestar es:\n{question}\n\n"
+                  f"Responde a ella claro y concisa")
 
         data = {
             "content": [question],

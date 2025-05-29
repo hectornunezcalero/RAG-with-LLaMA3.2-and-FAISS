@@ -61,7 +61,7 @@ class Llama3Server:
             task = data.get('task', 'generation')
             pooling = data.get('pooling', 'none')
             content = data.get('content', [])
-            max_tokens = int(data.get('max_tokens', 1024))
+            max_tokens = int(data.get('max_tokens', 2048))
             new_prompt = data.get('new_prompt')
 
             # Generar respuesta
