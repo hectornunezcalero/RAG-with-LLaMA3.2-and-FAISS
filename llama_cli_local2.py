@@ -6,13 +6,20 @@ from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 import faiss
 import pickle
+import tiktoken  # Para contar tokens
 
 # Configuración
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "127.0.0.1"
 API_KEY = "abc123"
 VECTOR_DB_PATH = "./vector_db"
-MAX_TOKENS = 2048
+MAX_TOKENS = 4096
+RESERVED_FOR_QUESTION = 512
+
+# Tokenizer
+tokenizer = tiktoken.get_encoding("cl100k_base")
+def count_tokens(text):
+    return len(tokenizer.encode(text))
 
 # Cargar base vectorial
 with open(f"{VECTOR_DB_PATH}/index.pkl", "rb") as f:
@@ -32,21 +39,20 @@ class Llama3CLI:
     def process_request(self, question: str):
         print(f"Resolviendo pregunta: {question}")
 
-        # Recuperamos más chunks y filtramos los relevantes del mismo archivo
-        docs = db.similarity_search(question, k=3)
+        # Recuperamos chunks por similitud
+        docs = db.similarity_search(question, k=5)
         print(f"Chunks rescatados por similitud: {len(docs)}")
+        for doc in docs:
+            chunk_preview = " ".join(doc.page_content.split()[:20]) + " ..."
+            print(f" - {doc.metadata['source']} (chunk {doc.metadata['chunk_index']}): {chunk_preview}")
 
-        MAX_CONTEXT_CHARS = 2048  # Ajusta según lo que tu servidor tolere
         contexto = ""
         for doc in docs:
-            if len(contexto) + len(doc.page_content) > MAX_CONTEXT_CHARS:
-                espacio_restante = MAX_CONTEXT_CHARS - len(contexto)
-                contexto += doc.page_content[:espacio_restante]
-                break
-            else:
-                contexto += doc.page_content + "\n\n"
+            chunk = doc.page_content
+            contexto += chunk + "\n------\n"
 
-        prompt = (f"Eres un asistente experto sobre la información de tus documentos. Usa el siguiente contexto y contesta a la pregunta:\n\n"
+        prompt = (f"Eres un asistente experto sobre la información de tus documentos. "
+                  f"Usa el siguiente contexto y contesta a la pregunta:\n\n"
                   f"Contexto:\n{contexto}\n\n"
                   f"La pregunta del usuario a contestar es:\n{question}\n\n"
                   f"Responde a ella claro y concisa")
@@ -62,12 +68,6 @@ class Llama3CLI:
         headers = {"Authorization": API_KEY, "Session": self.session_id}
         url = f"http://{SERVER_IP}:{LLAMA_PORT}/request"
         print("Enviando prompt al LLM del servidor...")
-
-        """  Si el servidor es avanzado, se puede cambiar la tarea y el pooling.
-        if server_type == "advanced":
-            data["task"] = "generation"
-            data["pooling"] = "mean"
-        """
 
         try:
             response = requests.post(url, json=data, headers=headers)
@@ -90,21 +90,17 @@ class Llama3GUI:
         self.window = tk.Tk()
         self.window.title("Llama3.2 - RAG Assistant")
 
-        # Configurar la ventana para que permita redimensionamiento dinámico
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=1)
         self.window.grid_rowconfigure(0, weight=1)
         self.window.grid_rowconfigure(2, weight=1)
 
-        # Campo para escribir la pregunta
         self.input_text = scrolledtext.ScrolledText(self.window, height=10, width=70)
         self.input_text.grid(row=0, column=0, columnspan=2, pady=10, padx=10, sticky="nsew")
 
-        # Botón para enviar la pregunta
         self.send_button = tk.Button(self.window, text="Send Request", command=self.send_request)
         self.send_button.grid(row=1, column=0, columnspan=2, pady=5, padx=10)
 
-        # Área donde se muestra la respuesta del modelo
         self.output_text = scrolledtext.ScrolledText(self.window, height=20, width=70)
         self.output_text.grid(row=2, column=0, columnspan=2, pady=10, padx=10, sticky="nsew")
 
@@ -127,3 +123,4 @@ class Llama3GUI:
 if __name__ == "__main__":
     app = Llama3GUI()
     app.run()
+

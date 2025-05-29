@@ -26,7 +26,7 @@ def chunker(text, chunk_len, overlap):
     return chunks
 
 # vectorización de los textos extraídos
-def vectorizer(dir_textos="./txtdata", output="./vector_db", chunk_len=100, overlap=30):
+def vectorizer(dir_textos="./txtdata", output="./vector_db", chunk_len=150, overlap=30):
     modelo = HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2')  # modelo de tokenización y vectorización multilingüe sacado de HuggingFace
     docs = []
 

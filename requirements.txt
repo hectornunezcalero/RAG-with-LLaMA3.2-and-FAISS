@@ -5,3 +5,4 @@ requests
 langchain
 llama-cpp-python
 flask
+tiktoken
