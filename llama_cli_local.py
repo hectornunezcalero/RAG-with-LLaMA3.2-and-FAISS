@@ -37,8 +37,7 @@ class Llama3CLI:
 
         prompt = (f"Eres un asistente experto sobre la información de tus documentos. Usa el siguiente contexto para responder a la pregunta que se te hará posteriormente:\n\n"
                   f"Contexto:\n{contexto}\n\n"
-                  f"Pregunta:\n{question}\n\n"
-                  f"Responde para un público que ya dispone de conocimientos sobre el tema.")
+                  f"Pregunta:\n{question}\n\n")
 
         data = {
             "content": [question],

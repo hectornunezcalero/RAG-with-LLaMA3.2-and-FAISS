@@ -9,7 +9,7 @@ app = Flask(__name__)
 MODEL_PATH = "./models/Llama-3.2-1B-Instruct.Q4_K_M.gguf"
 llama = Llama(model_path=MODEL_PATH, n_ctx=4096)
 
-DB_PATH = "./vector_db"
+DB_PATH = "../vector_db"
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 with open(f"{DB_PATH}/index.pkl", "rb") as f:
     docstore, index_to_docstore_id = pickle.load(f)
