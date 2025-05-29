@@ -16,6 +16,7 @@ Inicia un servidor Flask que genera respuestas utilizando el modelo Llama3.2 3B.
 _python llama_server_local.py_
 <br>
 ## 4. Ejecución del cliente: llama_cli_local.py
-Proporciona una interfaz gráfica (GUI) para enviar preguntas al servidor y recibir respuestas generadas por el modelo. Utiliza la base de datos FAISS para realizar recuperación de contexto
+Proporciona una interfaz gráfica (GUI) para enviar preguntas y por tanto el prompt al servidor, recibiendo respuestas generadas por el modelo.
+Utiliza la base de datos FAISS para realizar recuperación de contexto a la hora de enviar el prompt con la query. 
 <br>
 _python llama_cli_local.py_
