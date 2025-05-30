@@ -54,7 +54,7 @@ class Llama3CLI:
         prompt = (f"Eres un asistente experto sobre la información de tus documentos. "
                   f"Usa el siguiente contexto y contesta a la pregunta:\n\n"
                   f"Contexto:\n{contexto}\n\n"
-                  f"La pregunta del usuario que debes contestar es:\n{question}\n\n")
+                  f"La pregunta debes contestar sobre lo anterior es:\n{question}\n\n")
 
         data = {
             "content": [question],
@@ -170,7 +170,7 @@ class Llama3GUI:
 
         # Ejecutar petición al modelo
         response = self.client.process_request(question)
-        print("Consulta respondida sobre:", response)
+        print("Consulta respondida sobre:", question)
         print("--------------------------")
 
         if "response" in response:
