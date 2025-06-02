@@ -9,11 +9,10 @@ import faiss # motor eficiente de búsqueda vectorial usado por FAISS (backend C
 import pickle
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
-SERVER_IP = "127.0.0.1"
-API_KEY = "abc123"
+SERVER_IP = "192.168.79.82"
+API_KEY = "<MASTERKEY>"
 VECTOR_DB_PATH = "./vector_db"
 MAX_TOKENS = 4096
-RESERVED_FOR_QUESTION = 512
 
 
 # Cargar base vectorial
@@ -52,11 +51,11 @@ class Llama3CLI:
         )
 
         data = {
-            "content": [question],
-            "new_prompt": prompt,
-            "task": "generation",
             "pooling": "none",
-            "max_tokens": MAX_TOKENS
+            "task": "generation",
+            "content": [question],
+            "max_tokens": MAX_TOKENS,
+            "new_prompt": prompt,
         }
 
         headers = {"Authorization": API_KEY, "Session": self.session_id}
@@ -161,15 +160,31 @@ class Llama3GUI:
             return
 
         print(f"Resolviendo a la pregunta: {question}")
+        self.output_text.delete("1.0", tk.END)
         response = self.client.process_request(question)
         print(f"Consulta respondida sobre {question}")
         print("--------------------------")
 
-        if "response" in response:
+        content = None
+
+        if isinstance(response, dict):
+            # Caso ideal: respuesta directa en 'content'
+            if "content" in response:
+                content = response["content"]
+            # Caso del servidor actual: respuesta va en 'response'
+            elif "response" in response:
+                inner = response["response"]
+                # Si es dict con content
+                if isinstance(inner, dict) and "content" in inner:
+                    content = inner["content"]
+                else:
+                    content = inner  # string directo
+
+        if content:
             self.output_text.delete("1.0", tk.END)
-            self.output_text.insert(tk.END, response["response"])
+            self.output_text.insert(tk.END, content)
         else:
-            self.output_text.insert(tk.END, "❌ No se recibió una respuesta válida del servidor.")
+            self.output_text.insert(tk.END, "No se recibió una respuesta válida del servidor.")
 
     def save_to_file(self):
         query = self.input_text.get('1.0', tk.END).strip()

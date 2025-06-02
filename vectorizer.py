@@ -5,13 +5,12 @@ from langchain.schema import Document  # estructura estándar 'Document' para ca
 from langchain_community.docstore.in_memory import InMemoryDocstore  # almacén volatil en memoria RAM de esos objetos 'Document'
 import faiss  # motor eficiente de búsqueda vectorial usado por FAISS (backend C++/Python)
 import os  # manejo de rutas, carpetas y archivos del sistema
-from tqdm import tqdm # barra de progreso para operaciones largas, como puede ser la vectorización de los archivos
-import logging # uso: evitar que se impriman warnings
+import logging  # uso: evitar que se impriman warnings
 
-# silenciar el warnings que cree que no se va a chunkear y se va a exceder el límite de tokens
+# se silencia el warnings que cree que no se va a chunkear y se va a exceder el límite de tokens
 logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
 
-# Carga el tokenizador del mismo modelo que usarás para embeddings
+# se carga el tokenizador del mismo modelo que usarás para embeddings
 tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L12-v2")
 
 
@@ -102,19 +101,26 @@ def vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output):
     new_docs = []
     updated_files = 0
 
-    for archivo in tqdm(os.listdir(texts_dir), desc="Procesando archivos"):
-        if archivo.endswith(".txt") and archivo not in existing_sources:
-            with open(os.path.join(texts_dir, archivo), "r", encoding="utf-8") as f:
-                content = f.read()
+    for dirpath, _, files in os.walk(texts_dir):
+        for archivo in files:
+            if archivo.endswith(".txt"):
+                full_path = os.path.join(dirpath, archivo)
+                rel_path = os.path.relpath(full_path, texts_dir)  # ← esto será el "source" con subcarpeta incluida
 
-            chunks = chunker(content, chunk_len, overlap)
+                if rel_path in existing_sources:
+                    continue
 
-            for i, chunk in enumerate(chunks):
-                new_docs.append(Document(
-                    page_content=chunk,
-                    metadata={"source": archivo, "chunk_index": i}
-                ))
-            updated_files += 1
+                with open(full_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+
+                chunks = chunker(content, chunk_len, overlap)
+
+                for i, chunk in enumerate(chunks):
+                    new_docs.append(Document(
+                        page_content=chunk,
+                        metadata={"source": archivo, "chunk_index": i}
+                    ))
+                updated_files += 1
 
     if new_docs:
         faiss_db.add_documents(new_docs)  # se añaden los nuevos documentos al docstore, calcula sus embeddings y los añade al índice vectorial
@@ -131,7 +137,12 @@ def vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output):
 def save_processed_data(texts_dir, output, chunk_len, overlap):
     embedding_model = HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2')
 
-    current_files = set(f for f in os.listdir(texts_dir) if f.endswith(".txt"))
+    current_files = {
+        os.path.relpath(os.path.join(dirpath, f), texts_dir)
+        for dirpath, _, files in os.walk(texts_dir)
+        for f in files if f.endswith(".txt")
+    }
+
     if not current_files:
         print(f"No se encontraron archivos .txt en el directorio '{texts_dir}' para vectorizar.")
         return
@@ -163,4 +174,4 @@ def save_processed_data(texts_dir, output, chunk_len, overlap):
 
 # Función principal
 if __name__ == "__main__":
-    save_processed_data("./txtdata", "./vector_db", 230, 50)
+    save_processed_data("./txtdata", "./vector_db", 180, 40)

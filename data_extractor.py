@@ -56,42 +56,51 @@ def extract_txt(pdf_path):
 
 
 # Extraer el texto de los PDFs y guardarlos como archivos de texto
-def process_pdf(data_dir, output_dir):
-    pdf_files = [f for f in os.listdir(data_dir) if f.endswith(".pdf")]
-    if not pdf_files:
-        print("No hay archivos PDF para extraer.")
-
-
-    # se eliminan los .txt que no tengan su PDF correspondiente
-    deleted_count = 0
-    for f in os.listdir(output_dir):
-        if f.endswith(".txt") and f.replace(".txt", ".pdf") not in pdf_files:
-            os.remove(os.path.join(output_dir, f))
-            deleted_count += 1
-
-    if deleted_count > 0:
-        print(f"Se han eliminado {deleted_count} textos correspondientes a pdf inexistentes")
-
+def process_pdf(pdf_root, txt_root):
     extracted_count = 0
+    deleted_count = 0
 
-    for file in pdf_files:
-        pdf_path = os.path.join(data_dir, file)
-        txt_path = os.path.join(output_dir, file.replace(".pdf", ".txt"))
+    # se recorre el directorio raíz que contiene los directorios de PDFs
+    for dirpath_pdfs, _, files in os.walk(pdf_root):
+        pdf_files = [f for f in files if f.endswith(".pdf")]
 
-        if os.path.exists(txt_path):
+        if not pdf_files:
             continue
 
-        text = extract_txt(pdf_path)
-        with open(txt_path, "w", encoding="utf-8") as f:
-            f.write(text)
+        # se crea la misma subestructura en txt_root
+        rel_path = os.path.relpath(dirpath_pdfs, pdf_root)
+        txt_dir = os.path.join(txt_root, rel_path)
 
-        print(f"Extracción de datos exitosa sobre \"{file}\"")
-        extracted_count += 1
+        if not os.path.exists(txt_dir):
+            os.makedirs(txt_dir)
 
+        # se eliminan los .txt cuyos pdfs ya no existen
+        for txt_file in os.listdir(txt_dir):
+            if txt_file.endswith(".txt") and txt_file.replace(".txt", ".pdf") not in pdf_files:
+                os.remove(os.path.join(txt_dir, txt_file))
+                deleted_count += 1
+
+        # Extraer PDFs nuevos
+        for pdf_file in pdf_files:
+            pdf_path = os.path.join(dirpath_pdfs, pdf_file)
+            txt_path = os.path.join(txt_dir, pdf_file.replace(".pdf", ".txt"))
+
+            if os.path.exists(txt_path):
+                continue
+
+            text = extract_txt(pdf_path)
+            with open(txt_path, "w", encoding="utf-8") as f:
+                f.write(text)
+
+            print(f"Extracción de datos exitosa sobre \"{dirpath_pdfs}\\{pdf_file}\"")
+            extracted_count += 1
+
+    if deleted_count > 0:
+        print(f"Se han eliminado {deleted_count} textos correspondientes a PDFs inexistentes.")
     if extracted_count == 0:
         print("No hay PDFs por extraer, todos los archivos ya tienen su versión .txt.")
     else:
-        print(f"Total de archivos extraidos en esta ejecución: {extracted_count}")
+        print(f"Total de archivos extraídos a texto en esta ejecución: {extracted_count}")
 
 
 # Función principal
