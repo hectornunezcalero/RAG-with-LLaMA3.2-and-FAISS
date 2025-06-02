@@ -51,10 +51,14 @@ class Llama3CLI:
             chunk = doc.page_content
             contexto += chunk + "\n------\n"
 
-        prompt = (f"Eres un asistente experto sobre la información de tus documentos. "
-                  f"Usa el siguiente contexto y contesta a la pregunta:\n\n"
-                  f"Contexto:\n{contexto}\n\n"
-                  f"La pregunta debes contestar sobre lo anterior es:\n{question}\n\n")
+        prompt = (
+            "Eres un asistente experto en análisis de documentos. "
+            "Debes responder con precisión y claridad utilizando la información proporcionada en el siguiente contexto. "
+            "Tu objetivo es entender bien la intención de la pregunta y dar una respuesta útil y coherente.\n\n"
+            f"Contexto:\n{contexto}\n\n"
+            f"Pregunta:\n{question}\n\n"
+            "Respuesta:"
+        )
 
         data = {
             "content": [question],

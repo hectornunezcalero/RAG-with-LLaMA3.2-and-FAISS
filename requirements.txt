@@ -1,8 +1,11 @@
-sentence-transformers
 faiss-cpu
-PyMuPDF
-requests
+flask
 langchain
 llama-cpp-python
-flask
+PyMuPDF
+requests
+sentence-transformers
 tiktoken
+tqdm
+transformers
+torch
