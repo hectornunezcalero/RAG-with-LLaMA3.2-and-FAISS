@@ -8,7 +8,6 @@ import os  # manejo de rutas, carpetas y archivos del sistema
 from tqdm import tqdm # barra de progreso para operaciones largas, como puede ser la vectorización de los archivos
 import logging # uso: evitar que se impriman warnings
 
-
 # silenciar el warnings que cree que no se va a chunkear y se va a exceder el límite de tokens
 logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
 
@@ -16,7 +15,7 @@ logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR
 tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L12-v2")
 
 
-# divide el texto en chunks para facilitar la búsqueda de similitudes vectoriales
+# Dividir el texto en chunks para facilitar la búsqueda de similitudes vectoriales
 def chunker(text, chunk_len, overlap):
     encoding = tokenizer(text, return_offsets_mapping=True, add_special_tokens=False)
     input_ids = encoding["input_ids"]
@@ -38,23 +37,23 @@ def chunker(text, chunk_len, overlap):
     return chunks
 
 
-# comprobar la existe de la base de datos FAISS
+# Comprobar la existe de la base de datos FAISS
 def faiss_db_exists(output):
     faiss_index_path = os.path.join(output, "index.faiss")
     faiss_pkl_path = os.path.join(output, "index.pkl")
     return os.path.exists(faiss_index_path) and os.path.exists(faiss_pkl_path)
 
 
-# cargar la base de datos FAISS existente desde disco
-def load_faiss_db(output, model):
-    faiss_db = FAISS.load_local(output, model)  # carga index.faiss e index.pkl
+# Cargar la base de datos FAISS existente desde disco
+def load_faiss_db(output, embedding_model):
+    faiss_db = FAISS.load_local(output, embedding_model)  # carga index.faiss e index.pkl
     return faiss_db
 
 
-# Crea o carga la base de datos FAISS desde disco o inicializa una nueva
-def create_faiss_db(model):
+# Crear o cargar la base de datos FAISS desde disco o inicializa una nueva
+def create_faiss_db(embedding_model):
     # primeramente, el índice-vector, docstore y la relación índice-vector<->docstore se gestiona en la RAM :
-    dimension = len(model.embed_query("test")) # dimensión vectorial para el modelo de embeddings (384 dimensiones para 'all-MiniLM-L12-v2')
+    dimension = len(embedding_model.embed_query("test")) # dimensión vectorial para el modelo de embeddings (384 dimensiones para 'all-MiniLM-L12-v2')
     index = faiss.IndexFlatL2(dimension) # objeto FAISS con los índices y vectores N-dimensionales de la bbdd FAISS
     """ Estructura de index:
         0 : [0.19, 0.21, 0.36, ...]  # embedding del chunk 0
@@ -90,11 +89,11 @@ def create_faiss_db(model):
     }
     """
 
-    faiss_db = FAISS(model, index, docstore, index_to_docstore_id)  # instancia de la base de datos FAISS con el modelo de embeddings, índice, almacén de documentos y relación índice<->docstore
+    faiss_db = FAISS(embedding_model, index, docstore, index_to_docstore_id)  # instancia de la base de datos FAISS con el modelo de embeddings, índice, almacén de documentos y relación índice<->docstore
     return faiss_db
 
 
-# vectorizar y añadir los nuevos archivos .txt encontrados en el directorio a la base FAISS
+# Vectorizar y añadir los nuevos archivos .txt encontrados en el directorio a la base FAISS
 def vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output):
     existing_sources = {
         doc.metadata["source"]
@@ -128,9 +127,9 @@ def vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output):
         print("No se han detectado nuevos documentos para vectorizar. La base de datos FAISS ya estaba actualizada.")
 
 
-# utilizar los argumentos clave de la función para crear/usar la base de datos FAISS y vectorizar nuevos archivos .txt
+# Utilizar los argumentos clave de la función para crear/usar la base de datos FAISS y vectorizar nuevos archivos .txt
 def save_processed_data(texts_dir, output, chunk_len, overlap):
-    model = HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2')
+    embedding_model = HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2')
 
     current_files = set(f for f in os.listdir(texts_dir) if f.endswith(".txt"))
     if not current_files:
@@ -140,7 +139,7 @@ def save_processed_data(texts_dir, output, chunk_len, overlap):
     if faiss_db_exists(output):
         # si la base de datos ya existe, solo la cargamos del disco
         print("Cargando base de datos...")
-        faiss_db = load_faiss_db(output, model)
+        faiss_db = load_faiss_db(output, embedding_model)
 
         # eliminamos los documentos y vectores indexados de los archivos que ya no existen por si se han descartado posteriormente
         stored_files = set(doc.metadata["source"] for doc in faiss_db.docstore._dict.values())
@@ -149,19 +148,19 @@ def save_processed_data(texts_dir, output, chunk_len, overlap):
 
         if deleted_files:
             print(f"Se ha(n) detectado como eliminado(s) {len(deleted_files)} archivo(s). Actualizando por ello la base de datos...")
-            faiss_db = create_faiss_db(model)
+            faiss_db = create_faiss_db(embedding_model)
         elif added_files:
             print(f"Se ha(n) detectado {len(added_files)} archivo(s) nuevo(s). Procediendo a actualizar la base de datos...")
 
     else:
         # si no existe, creamos una nueva base de datos FAISS vacía
         print("Creando nueva base de datos FAISS...")
-        faiss_db = create_faiss_db(model)
+        faiss_db = create_faiss_db(embedding_model)
 
     # vectorizamos los archivos nuevos no indexados aún y se añaden a la base de datos FAISS
     vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output)
 
 
-# función principal
+# Función principal
 if __name__ == "__main__":
     save_processed_data("./txtdata", "./vector_db", 230, 50)

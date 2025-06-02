@@ -2,13 +2,12 @@ import requests
 import logging
 import tkinter as tk
 from tkinter import ttk, scrolledtext, filedialog, messagebox
-from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
-import faiss
+from transformers import AutoTokenizer  # tokenizador de texto para el modelo de embeddings elegido de Hugging Face
+from langchain_huggingface import HuggingFaceEmbeddings  # para sacar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
+from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinado para las búsquedas por similitud
+import faiss # motor eficiente de búsqueda vectorial usado por FAISS (backend C++/Python)
 import pickle
-import tiktoken
 
-# Configuración
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "127.0.0.1"
 API_KEY = "abc123"
@@ -16,31 +15,24 @@ VECTOR_DB_PATH = "./vector_db"
 MAX_TOKENS = 4096
 RESERVED_FOR_QUESTION = 512
 
-# Tokenizer
-tokenizer = tiktoken.get_encoding("cl100k_base")
-def count_tokens(text):
-    return len(tokenizer.encode(text))
 
 # Cargar base vectorial
 with open(f"{VECTOR_DB_PATH}/index.pkl", "rb") as f:
     docstore, index_to_docstore_id = pickle.load(f)
-
-faiss_index = faiss.read_index(f"{VECTOR_DB_PATH}/index.faiss")
+index = faiss.read_index(f"{VECTOR_DB_PATH}/index.faiss")
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L12-v2")
-
-db = FAISS(index=faiss_index, docstore=docstore,
-           index_to_docstore_id=index_to_docstore_id, embedding_function=embedding_model)
+faiss_db = FAISS(index=index, docstore=docstore, index_to_docstore_id=index_to_docstore_id, embedding_function=embedding_model)
 
 
+# Manejar la interacción del cliente con el modelo Llama3.2
 class Llama3CLI:
     def __init__(self):
         self.session_id = "0"
 
+    # Procesar la solicitud del usuario
     def process_request(self, question: str):
-        print(f"Resolviendo pregunta: {question}")
-
-        # Recuperamos chunks por similitud
-        docs = db.similarity_search(question, k=5)
+        # se encuentran los 5 chunks más relevantes para la pregunta dentro de la base de datos FAISS y se devuelven los objetos 'Document' correspondientes del docstore
+        docs = faiss_db.similarity_search(question, k=5)
         print(f"Chunks rescatados por similitud: {len(docs)}")
         for doc in docs:
             chunk_preview = " ".join(doc.page_content.split()[:20]) + " ..."
@@ -48,8 +40,7 @@ class Llama3CLI:
 
         contexto = ""
         for doc in docs:
-            chunk = doc.page_content
-            contexto += chunk + "\n------\n"
+            contexto += doc.page_content + "\n--------\n"
 
         prompt = (
             "Eres un asistente experto en análisis de documentos. "
@@ -169,12 +160,9 @@ class Llama3GUI:
             messagebox.showwarning("Advertencia", "Debes escribir una pregunta antes de enviarla.")
             return
 
-        self.output_text.delete("1.0", tk.END)
-        self.output_text.insert(tk.END, "⏳ Procesando la pregunta...\n")
-
-        # Ejecutar petición al modelo
+        print(f"Resolviendo a la pregunta: {question}")
         response = self.client.process_request(question)
-        print("Consulta respondida sobre:", question)
+        print(f"Consulta respondida sobre {question}")
         print("--------------------------")
 
         if "response" in response:
@@ -184,10 +172,10 @@ class Llama3GUI:
             self.output_text.insert(tk.END, "❌ No se recibió una respuesta válida del servidor.")
 
     def save_to_file(self):
-        pregunta = self.input_text.get('1.0', tk.END).strip()
-        respuesta = self.output_text.get('1.0', tk.END).strip()
+        query = self.input_text.get('1.0', tk.END).strip()
+        answer = self.output_text.get('1.0', tk.END).strip()
 
-        if not pregunta or not respuesta:
+        if not query or not answer:
             messagebox.showwarning("Aviso", "No hay contenido para guardar.")
             return
 
@@ -198,9 +186,9 @@ class Llama3GUI:
         if file_path:
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write("🧾 Pregunta:\n")
-                f.write(pregunta + "\n\n\n")
+                f.write(query + "\n\n\n")
                 f.write("📬 Respuesta:\n")
-                f.write(respuesta + "\n")
+                f.write(answer + "\n")
 
     def run(self):
         self.window.mainloop()

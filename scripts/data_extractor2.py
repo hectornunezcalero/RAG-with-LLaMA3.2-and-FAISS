@@ -3,7 +3,7 @@ import os # manejo de rutas, carpetas y archivos del equipo
 import re # limpieza de texto mediante expresiones regulares
 
 
-# Procesa los bloques de texto cada página del PDF, reduciendo espaciados innecesarios y soloexisitiendo los de separación de palabras y párrafos
+# Procesar los bloques de texto cada página del PDF, reduciendo espaciados innecesarios y soloexisitiendo los de separación de palabras y párrafos
 def block_process(blocks):
     parts = []
     for block in blocks:
@@ -21,7 +21,7 @@ def block_process(blocks):
     return "\n".join(parts)
 
 
-# Extrae el texto de un PDF por bloques, teniendo en cuenta si cada hoja contiene una o dos columnas
+# Extraer el texto de un PDF por bloques, teniendo en cuenta si cada hoja contiene una o dos columnas
 def extract_txt(pdf_path):
     doc = fitz.open(pdf_path)
     final_text = ""
@@ -94,7 +94,7 @@ def process_pdf(data_dir, output_dir):
         print(f"Total de archivos extraidos en esta ejecución: {extracted_count}")
 
 
-# función principal
+# Función principal
 if __name__ == "__main__":
     process_pdf("./pdfdata", "./txtdata")
 
