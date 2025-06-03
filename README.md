@@ -33,7 +33,7 @@ Antes de comenzar, asegúrese de cumplir con lo siguiente:
   python -m pip install --upgrade pip
   ```
 - Acceso local a **LLaMA 3.2** (previamente autorizado por Meta y descargado vía Hugging Face).
-- Uso de una terminal como PowerShell, CMD o Git Bash.
+- Uso de una terminal (preferiblemente PowerShell)
 
 ---
 
@@ -44,20 +44,23 @@ Siga estos pasos para configurar el entorno virtual en Windows:
 ```plaintext
 # setup_venv_windows.txt
 
-1. Abre PowerShell o Git Bash en la carpeta raíz del proyecto.
+1. Abra la terminal de PowerShell.
 
-2. Ejecuta el siguiente comando para crear un entorno virtual:
+2. Navegue al directorio del proyecto:
+   cd ruta\al\directorio\del\proyecto
+
+3. Cree un entorno virtual con:
    python -m venv venv
 
-3. Activa el entorno virtual:
+4. Active el entorno virtual mediante:
    .\venv\Scripts\activate
 
-4. Instala todas las dependencias necesarias:
+5. Instale todas las dependencias necesarias usando:
    pip install -r requirements.txt
 
 ```
 
-Este proceso crea un entorno limpio y aislado, evitando conflictos con otras instalaciones de Python.
+Este proceso construye un entorno limpio y aislado, evitando conflictos con otras instalaciones de Python.
 
 ---
 
