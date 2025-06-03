@@ -6,9 +6,9 @@
 #                                                                       #
 #                                                                       #
 #       Proyecto de Fin de Grado:                                       #
-#           Servidor REST API para LLaMA 3.2                            #
-#           Implementación de backend para procesamiento de             #
-#           consultas mediante modelo LLaMA con Flask                   #
+#           Sistema de Generación por Recuperación Aumentada (RAG)      #
+#           con LLaMA 3.2 como asistente para consultas                 #
+#           de artículos farmacéuticos.                                 #
 #                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
