@@ -151,6 +151,7 @@ model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-Llama-3-3B")
 ```
 
 ---
+---
 
 ## 🧠 Funcionamiento resumido del sistema RAG
 
