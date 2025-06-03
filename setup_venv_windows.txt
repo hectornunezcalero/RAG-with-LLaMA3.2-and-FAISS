@@ -1,11 +1,11 @@
 # Instalar Python desde https://www.python.org/downloads/
-# Marca "Add Python to PATH" durante la instalación
+# Marcar "Add Python to PATH" durante la instalación
 
 python -m venv venv
+
 .\venv\Scripts\Activate.ps1
 
-# Si te da error de ejecución:
+# Si da error de ejecución:
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 pip install -r requirements.txt
-

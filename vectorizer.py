@@ -45,7 +45,7 @@ def faiss_db_exists(output):
 
 # Cargar la base de datos FAISS existente desde disco
 def load_faiss_db(output, embedding_model):
-    faiss_db = FAISS.load_local(output, embedding_model)  # carga index.faiss e index.pkl
+    faiss_db = FAISS.load_local(output, embedding_model, allow_dangerous_deserialization=True) # se carga index.faiss e index.pkl
     return faiss_db
 
 
@@ -118,7 +118,7 @@ def vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output):
                 for i, chunk in enumerate(chunks):
                     new_docs.append(Document(
                         page_content=chunk,
-                        metadata={"source": archivo, "chunk_index": i}
+                        metadata={"source": rel_path, "chunk_index": i}
                     ))
                 updated_files += 1
 
@@ -150,7 +150,7 @@ def save_processed_data(texts_dir, output, chunk_len, overlap):
     if faiss_db_exists(output):
         # si la base de datos ya existe, solo la cargamos del disco
         print("Cargando base de datos...")
-        faiss_db = load_faiss_db(output, embedding_model)
+        faiss_db = FAISS.load_local(output, embedding_model, allow_dangerous_deserialization=True)
 
         # eliminamos los documentos y vectores indexados de los archivos que ya no existen por si se han descartado posteriormente
         stored_files = set(doc.metadata["source"] for doc in faiss_db.docstore._dict.values())

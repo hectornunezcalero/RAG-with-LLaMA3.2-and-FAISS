@@ -1,9 +1,10 @@
-faiss-cpu
-flask
-langchain
-llama-cpp-python
-PyMuPDF
-requests
-sentence-transformers
-transformers
-torch
+faiss-cpu                         # motor de búsqueda vectorial (CPU version)
+flask                             # para el servidor Flask
+langchain                         # core de LangChain
+langchain-community               # módulos comunitarios como FAISS y docstore
+langchain-huggingface             # NUEVO paquete oficial para usar HuggingFaceEmbeddings
+sentence-transformers             # para embeddings con modelos tipo MiniLM
+transformers                      # usado por sentence-transformers y para el tokenizer
+torch                             # backend necesario para embeddings
+PyMuPDF                           # para procesar los PDFs
+requests                          # usado por el cliente para hacer peticiones

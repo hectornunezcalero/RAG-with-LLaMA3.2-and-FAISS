@@ -28,7 +28,7 @@ class Llama3Server:
         self.app = Flask(__name__)
 
         # Carga el modelo GGUF
-        model_path = "../models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+        model_path = "models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Modelo no encontrado en {model_path}")
 
