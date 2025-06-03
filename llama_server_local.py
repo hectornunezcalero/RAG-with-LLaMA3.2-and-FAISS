@@ -5,12 +5,11 @@
 #       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
 #                                                                       #
 #                                                                       #
-#       Proyecto de Fin de Grado:                                       #
+#       Trabajo de Fin de Grado:                                        #
 #           Sistema de Generación por Recuperación Aumentada (RAG)      #
 #           con LLaMA 3.2 como asistente para consultas                 #
 #           de artículos farmacéuticos del grupo de investigación       #
-#           de la Universidad de Alcalá                                 #
-#                                                                       #
+#           de la Universidad de Alcalá.                                #
 #                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
@@ -19,7 +18,7 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #
-#       Script: llama_server_local.py                                         #
+#       Script: llama_server_local.py                                   #
 #       Funciones principales:                                          #
 #        1. Cargar y prepararar el modelo LLaMA 3.2 desde HuggingFace   #
 #        2. Inicializar el servidor Flask                               #

@@ -5,11 +5,12 @@
 #       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
 #                                                                       #
 #                                                                       #
-#       Proyecto de Fin de Grado:                                       #
+#       Trabajo de Fin de Grado:                                        #
 #           Sistema de Generación por Recuperación Aumentada (RAG)      #
 #           con LLaMA 3.2 como asistente para consultas                 #
-#           de artículos farmacéuticos  del grupo de investigación      #
-#           de la Universidad de Alcalá                                 #
+#           de artículos farmacéuticos del grupo de investigación       #
+#           de la Universidad de Alcalá.                                #
+#                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
 #       Cotutor: Alberto Palomo Alonso                                  #
