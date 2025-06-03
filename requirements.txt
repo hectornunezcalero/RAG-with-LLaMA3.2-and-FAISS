@@ -13,7 +13,7 @@ PyMuPDF                           # usado por el data_extractor para extraer tex
 requests                          # usado por el cliente para hacer peticiones al servidor Flask con el modelo
 accelerate                        # usado por el servidor para optimizar la carga y ejecución de modelos de Hugging Face
 python-dotenv                     # usado por el servidor para cargar variables de entorno desde un archivo .env, facilitando la configuración del entorno de ejecución
-tqdm                              # usado por el vectorizer para mostrar barras de progreso durante la indexación de documentos
+
 
 # ya incluidos por python:
 

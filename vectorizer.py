@@ -36,7 +36,6 @@ from langchain_huggingface import HuggingFaceEmbeddings  # sacar el modelo de em
 import faiss  # crear y consultar la base de datos vectorial FAISS (versión CPU)
 import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
 import logging  # controlar y personalizar la salida de mensajes, avisos y errores
-from tqdm import tqdm  # mostrar barras de progreso durante la indexación de documentos
 
 # se silencia el warnings que cree que no se va a chunkear y se va a exceder el límite de tokens
 logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)

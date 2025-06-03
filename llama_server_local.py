@@ -38,17 +38,15 @@ from flask import Flask, request, jsonify  # proporcionar la API REST al cliente
 from dotenv import load_dotenv  # cargar variables de entorno desde un archivo .env, facilitando la configuración del entorno de ejecución
 from transformers import AutoTokenizer, AutoModelForCausalLM  # cargar el tokenizador del modelo de embeddings
 
-# Carga variables del archivo .env
+# se cargan las variables del archivo .env
 load_dotenv()
 
-# Variables de entorno
-API_KEY = None  # Ya no fija, sino se valida con archivo
-HF_TOKEN = os.getenv("HF_TOKEN")  # Token Hugging Face para modelos privados
+API_KEY = None
+HF_TOKEN = os.getenv("HF_TOKEN")  # Token de Hugging Face para el modelo privado LLaMa 3.2-3B
 
-# Ruta archivo con claves API (ajusta si quieres)
+# ruta del archivo con las claves API
 __keys_path__ = os.getenv("KEYS_PATH", "keys_path.txt")
 
-# Puerto personalizado (como antes)
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 
 # Inicializa Flask
@@ -72,17 +70,17 @@ model = AutoModelForCausalLM.from_pretrained(
 model.eval()
 print("Modelo cargado correctamente.")
 
-# Carga todas las claves API una vez
+# se cargan todas las claves API una vez
 try:
     with open(__keys_path__, "r") as f:
         available_keys = [line.strip() for line in f if line.strip() and ':' in line]
 except Exception as e:
-    print(f"[!] Error cargando archivo de claves API en {__keys_path__}: {e}")
+    print(f"Error cargando archivo de claves API en {__keys_path__}: {e}")
     available_keys = []
 
 @app.route("/")
 def home():
-    return "Servidor API LLaMA 3.2 con backend Hugging Face"
+    return "Servidor API LLaMA 3.2 3B con backend de Hugging Face"
 
 @app.route("/request", methods=["POST"])
 def llama_request():
@@ -97,41 +95,43 @@ def llama_request():
     if session == "0":
         session = "si-" + hashlib.sha256(str(time.time()).encode()).hexdigest()[:20]
 
+
     data = request.get_json()
     if not data:
         return jsonify({"error": "Cuerpo JSON vacío"}), 400
 
-    # Usa el campo 'new_prompt' para generar texto (igual que antes)
     prompt = data.get("new_prompt")
-    max_tokens = int(data.get("max_tokens", 256))
+    max_tokens = int(data.get("max_tokens", 4096))
 
     if not prompt:
         return jsonify({"error": "Falta 'new_prompt' en el cuerpo"}), 400
 
-    # Validación de clave API usando el archivo cargado
+
     is_valid, username = validate_api_key(auth)
     if not is_valid:
         return jsonify({'response': 'Acceso denegado: clave API inválida', 'status_code': 401, 'query': data, 'session_id': 0})
 
-    # Logging
-    print(f"[i] Procesando petición de {username} con sesión {session}:\n{data}")
+    print(f"Procesando petición del {username} con sesión {session}:\n{data}")
+
 
     try:
+        # se tokeniza el prompt  y se adapta a los 'tensores' del modelo
         inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 
+        # se desactiva el cálculo de gradientes (aprendizaje) para ahorrar memoria y acelerar la inferencia
         with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
+            outputs = model.generate( # para generar el texto en base a los tensores de entrada y los parámetros proporcionados
+                **inputs, # se pasan los tensores de entrada
                 max_new_tokens=max_tokens,
-                do_sample=True,
-                temperature=0.7,
-                top_p=0.9
+                do_sample=True, # se activa el muestreo aleatorio para generar texto más variado
+                temperature=0.7, # se ajusta el valor de creatividad (valores altos -> creatividad, valores bajos -> precisión)
+                top_p=0.9 # se filtran los tokens según su probabilidad acumulada, mejorando la coherencia de la respuesta
             )
 
         response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     except Exception as ex:
-        print(f"[!] Error en ejecución: {ex}")
+        print(f"Error en ejecución: {ex}")
         return jsonify({'response': f'Error de ejecución: {ex}', 'status_code': 500,
                         'query': data, 'session_id': session})
 
@@ -144,9 +144,6 @@ def llama_request():
 
 
 def validate_api_key(key):
-    """
-    Valida la clave API usando la lista cargada disponible_keys.
-    """
     for line in available_keys:
         stored_key, username = line.split(':', 1)
         if key == stored_key:
@@ -156,7 +153,7 @@ def validate_api_key(key):
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=LLAMA_PORT)
+    app.run(host="0.0.0.0", port=LLAMA_PORT)
 
 
 

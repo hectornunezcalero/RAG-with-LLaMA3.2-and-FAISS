@@ -1,12 +1,12 @@
-from transformers import AutoTokenizer  # tokenizador de texto para el modelo de embeddings elegido de Hugging Face
-from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinado para las búsquedas por similitud
-from langchain_huggingface import HuggingFaceEmbeddings  # para sacar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
-import faiss # motor eficiente de búsqueda vectorial usado por FAISS (backend C++/Python)
-import pickle
-import requests
-import logging
-import tkinter as tk
-from tkinter import ttk, scrolledtext, filedialog, messagebox
+from transformers import AutoTokenizer  # cargar el tokenizador del modelo de embeddings de Hugging Face
+from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinado para las búsquedas por similitudor similitud
+from langchain_huggingface import HuggingFaceEmbeddings  # sacar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
+import faiss # crear y consultar la base de datos vectorial FAISS (versión CPU)
+import pickle # guardar y cargar los objetos serializados (por ejemplo, los índices)
+import requests  # hacer peticiones al servidor Flask con el modelo
+import logging  # controlar y personalizar la salida de mensajes, avisos y errores
+import tkinter as tk  # crear la interfaz gráfica de usuario (GUI)
+from tkinter import ttk, scrolledtext, filedialog, messagebox  # crear widgets, cajas de texto y diálogos de archivos
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "192.168.79.82"
@@ -14,12 +14,13 @@ API_KEY = "<MASTERKEY>"
 VECTOR_DB_PATH = "./vector_db"
 MAX_TOKENS = 4096
 
-
 # Cargar base vectorial
 with open(f"{VECTOR_DB_PATH}/index.pkl", "rb") as f:
     docstore, index_to_docstore_id = pickle.load(f)
+
 index = faiss.read_index(f"{VECTOR_DB_PATH}/index.faiss")
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L12-v2")
+
 faiss_db = FAISS(index=index, docstore=docstore, index_to_docstore_id=index_to_docstore_id, embedding_function=embedding_model)
 
 

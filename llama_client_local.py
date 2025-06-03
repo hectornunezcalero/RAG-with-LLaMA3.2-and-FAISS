@@ -18,7 +18,7 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #
-#       Script: llama3_client_gui.py                                    #
+#       Script: llama_client_local.py                                   #
 #       Funciones:                                                      #
 #        1. Interfaz gráfica con Tkinter para interactuar con LLaMA3.2  #
 #        2. Gestionar las sesiones y enviar consultas al servidor (LLM) #
@@ -202,18 +202,8 @@ class Llama3GUI:
 
         content = None
 
-        if isinstance(response, dict):
-            # Caso ideal: respuesta directa en 'content'
-            if "content" in response:
-                content = response["content"]
-            # Caso del servidor actual: respuesta va en 'response'
-            elif "response" in response:
-                inner = response["response"]
-                # Si es dict con content
-                if isinstance(inner, dict) and "content" in inner:
-                    content = inner["content"]
-                else:
-                    content = inner  # string directo
+        # se extrae el contenido de la respuesta
+        content = response.get("response", "No se recibió una respuesta válida del servidor.")
 
         if content:
             self.output_text.delete("1.0", tk.END)
