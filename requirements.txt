@@ -1,10 +1,26 @@
-faiss-cpu                         # motor de búsqueda vectorial (CPU version)
-flask                             # para el servidor Flask
-langchain                         # core de LangChain
-langchain-community               # módulos comunitarios como FAISS y docstore
-langchain-huggingface             # NUEVO paquete oficial para usar HuggingFaceEmbeddings
-sentence-transformers             # para embeddings con modelos tipo MiniLM
-transformers                      # usado por sentence-transformers y para el tokenizer
-torch                             # backend necesario para embeddings
-PyMuPDF                           # para procesar los PDFs
-requests                          # usado por el cliente para hacer peticiones
+# paquetes necesarios para data_extractor, vectorizer, llama_client y llama_server.
+
+flask                             # usado por el servidor para proporcionar la API REST al cliente
+faiss-cpu                         # usado por el vectorizer para crear y consultar la base de datos vectorial FAISS (versión CPU)
+langchain                         # usado por el vectorizer y cliente para la estructura langchain base para las siguientes funciones
+langchain-community               # usado por el vectorizer y cliente para cargar módulos comunitarios como FAISS y el docstore
+langchain-huggingface             # usado por el vectorizer y cliente para generar y usar embeddings con el modelo de Hugging Face
+transformers                      # usado por el vectorizer para cargar el tokenizador del modelo de embeddings
+sentence-transformers             # usado internamente por langchain-huggingface para cargar modelos de embeddings basados en Sentence Transformers
+torch                             # backend PyTorch usado por cliente y vectorizer para ejecutar modelos de embeddings (no se importa explícitamente)
+numpy                             # usado por el servidor para manejo numérico que conlleve arrays
+PyMuPDF                           # usado por el data_extractor para extraer texto de archivos PDF
+requests                          # usado por el cliente para hacer peticiones al servidor Flask con el modelo
+accelerate                        # usado por el servidor para optimizar la carga y ejecución de modelos de Hugging Face
+python-dotenv                     # usado por el servidor para cargar variables de entorno desde un archivo .env, facilitando la configuración del entorno de ejecución
+
+# ya incluidos por python:
+
+# os                              # usado por data_extractor y vectorizer para manejar rutas, directorios, archivos y operaciones del sistema de ficheros
+# re                              # usado por data_extractor para limpiar y procesar texto mediante expresiones regulares
+# logging                         # usado por vectorizer, llama_client y llama_server para controlar y personalizar la salida de mensajes, avisos y errores
+# pickle                          # usado por llama_client para guardar y cargar los objetos serializados (por ejemplo, los índices)
+# time                            # usado por llama_server para medir tiempos o controlar pausas en la ejecución
+# hashlib                         # usado por llama_server para generar hashes, usándolos como identificadores o para comprobar la integridad
+
+

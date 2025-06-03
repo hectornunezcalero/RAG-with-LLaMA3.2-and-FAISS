@@ -1,3 +1,33 @@
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#       Universidad de Alcalá - Escuela Politécnica Superior            #
+#                                                                       #
+#       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
+#                                                                       #
+#                                                                       #
+#       Proyecto de Fin de Grado:                                       #
+#           Sistema de Generación por Recuperación Aumentada (RAG)      #
+#           con LLaMA 3.2 como asistente para consultas                 #
+#           de artículos farmacéuticos.                                 #
+#                                                                       #
+#                                                                       #
+#       Autor: Héctor Núñez Calero                                      #
+#       Cotutor: Alberto Palomo Alonso                                  #
+#       Tutor: Jorge Pérez Aracil                                       #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#       Script: data_extractor.py                                       #
+#       Funciones:                                                      #
+#        1. Manejar los subdirectorios de pdfdata/ y txtdata/           #
+#        2. Extraer el texto de archivos PDF y limpiarlos               #
+#        3. Detectar estructuras en columnas y ordena el contenido      #
+#        4. Guardar el texto extraído en archivos .txt equivalentes     #
+#        5. Eliminar archivos .txt huérfanos si su PDF ya no existe     #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+
+
 import fitz  # alias de PyMuPDF -> para leer y extraer los PDFs
 import os # manejo de rutas, carpetas y archivos del equipo
 import re # limpieza de texto mediante expresiones regulares

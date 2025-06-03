@@ -20,5 +20,5 @@ txtdata/*
 !txtdata/.gitkeep
 vector_db/*
 !vector_db/.gitkeep
-models/*
-!models/.gitkeep
+Llama_3.2-3B/*
+!Llama_3.2-3B/.gitkeep

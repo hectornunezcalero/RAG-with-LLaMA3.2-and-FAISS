@@ -1,3 +1,33 @@
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#       Universidad de Alcalá - Escuela Politécnica Superior            #
+#                                                                       #
+#       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
+#                                                                       #
+#                                                                       #
+#       Proyecto de Fin de Grado:                                       #
+#           Sistema de Generación por Recuperación Aumentada (RAG)      #
+#           con LLaMA 3.2 como asistente para consultas                 #
+#           de artículos farmacéuticos.                                 #
+#                                                                       #
+#                                                                       #
+#       Autor: Héctor Núñez Calero                                      #
+#       Cotutor: Alberto Palomo Alonso                                  #
+#       Tutor: Jorge Pérez Aracil                                       #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#       Script: llama3_client_gui.py                                    #
+#       Funciones:                                                      #
+#        1. Interfaz gráfica con Tkinter para interactuar con LLaMA3.2  #
+#        2. Gestionar las sesiones y enviar consultas al servidor (LLM) #
+#        3. Búscar documentos relacionados con FAISS                    #
+#        4. Visualizar y poder guardar las preguntas y respuestas       #
+#        5. Manejar posibles errores de conexión y respuesta            #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+
+
 import requests
 import logging
 import tkinter as tk
@@ -10,7 +40,7 @@ import pickle
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "127.0.0.1"
-API_KEY = "<MASTERKEY>"
+API_KEY = "f4d3c2b1a9876543210fedcba"
 VECTOR_DB_PATH = "./vector_db"
 MAX_TOKENS = 4096
 

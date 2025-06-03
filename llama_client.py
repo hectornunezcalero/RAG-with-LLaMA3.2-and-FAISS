@@ -1,12 +1,12 @@
+from transformers import AutoTokenizer  # tokenizador de texto para el modelo de embeddings elegido de Hugging Face
+from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinado para las búsquedas por similitud
+from langchain_huggingface import HuggingFaceEmbeddings  # para sacar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
+import faiss # motor eficiente de búsqueda vectorial usado por FAISS (backend C++/Python)
+import pickle
 import requests
 import logging
 import tkinter as tk
 from tkinter import ttk, scrolledtext, filedialog, messagebox
-from transformers import AutoTokenizer  # tokenizador de texto para el modelo de embeddings elegido de Hugging Face
-from langchain_huggingface import HuggingFaceEmbeddings  # para sacar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
-from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinado para las búsquedas por similitud
-import faiss # motor eficiente de búsqueda vectorial usado por FAISS (backend C++/Python)
-import pickle
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "192.168.79.82"

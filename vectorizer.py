@@ -1,8 +1,38 @@
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#       Universidad de Alcalá - Escuela Politécnica Superior            #
+#                                                                       #
+#       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
+#                                                                       #
+#                                                                       #
+#       Proyecto de Fin de Grado:                                       #
+#           Sistema de Generación por Recuperación Aumentada (RAG)      #
+#           con LLaMA 3.2 como asistente para consultas                 #
+#           de artículos farmacéuticos.                                 #
+#                                                                       #
+#                                                                       #
+#       Autor: Héctor Núñez Calero                                      #
+#       Cotutor: Alberto Palomo Alonso                                  #
+#       Tutor: Jorge Pérez Aracil                                       #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#       Script: vectorizer.py                                           #
+#       Funciones:                                                      #
+#        1. Crear/Cargar y guardar la base de datos vectorial FAISS     #
+#        2. Trocear texto con tokenizador de Hugging Face               #
+#        3. Generar vectores con embeddings preentrenados (HF)          #
+#        4. Detectar y añadir posibles archivos nuevos a la database    #
+#        5. Regenerar la database si se detectan archivos eliminados    #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+
+
 from transformers import AutoTokenizer  # tokenizador de texto para el modelo de embeddings elegido de Hugging Face
-from langchain_huggingface import HuggingFaceEmbeddings  # para sacar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
 from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinado para las búsquedas por similitud
-from langchain.schema import Document  # estructura estándar 'Document' para cada chunk: texto + metadatos
 from langchain_community.docstore.in_memory import InMemoryDocstore  # almacén volatil en memoria RAM de esos objetos 'Document'
+from langchain_huggingface import HuggingFaceEmbeddings  # para sacar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
+from langchain.schema import Document  # estructura estándar 'Document' para cada chunk: texto + metadatos
 import faiss  # motor eficiente de búsqueda vectorial usado por FAISS (backend C++/Python)
 import os  # manejo de rutas, carpetas y archivos del sistema
 import logging  # uso: evitar que se impriman warnings
