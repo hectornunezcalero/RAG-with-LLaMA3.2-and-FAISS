@@ -24,7 +24,7 @@ Este repositorio contiene un sistema completo para la integración local de un m
 
 ## ⚙️ Requisitos previos
 
-Antes de comenzar, asegúrate de cumplir con lo siguiente:
+Antes de comenzar, asegúrese de cumplir con lo siguiente:
 
 - Sistema operativo: **Windows 10/11** (con soporte para Python).
 - **Python 3.10 o 3.11** instalado y añadido al PATH.
@@ -40,7 +40,7 @@ Antes de comenzar, asegúrate de cumplir con lo siguiente:
 
 ## 🐍 Creación del entorno virtual (Windows)
 
-Sigue estos pasos para configurar el entorno virtual en Windows:
+Siga estos pasos para configurar el entorno virtual en Windows:
 
 ```plaintext
 # setup_venv_windows.txt
@@ -88,25 +88,25 @@ python-dotenv
 
 ### 1. Extraer y vectorizar documentos
 
-Primero, extrae el texto de los PDFs y guárdalo en formato `.txt`:
+En primer lugar, se extrae el texto de los archivos PDF del directorio pdfdata y guarda el contenido en formato .txt en el directorio txtdata.
 
 ```bash
 python data_extractor.py
 ```
 
-Luego genera los embeddings y crea el índice FAISS:
+En segundo lugar, se divide los textos en chunks, genera vectores para cada chunk utilizando un modelo de embeddings y almacena los vectores en una base de datos FAISS.
 
 ```bash
 python vectorizer.py
 ```
 
-Esto gestionará `txtdata/` contruyendo el índice en `vector_db/`.
+Esto gestionará `txtdata/` contruyendo los objetos 'document', vectores e índice en `vector_db/`.
 
 ---
 
 ### 2. Levantar el servidor Flask con LLaMA
 
-Abre una terminal nueva:
+Abra una terminal nueva:
 
 ```bash
 python llama_server_local.py
@@ -125,20 +125,21 @@ python llama_client_local.py
 ```
 
 Se abrirá una ventana gráfica que permite introducir preguntas. El sistema recuperará contexto relevante y generará respuestas usando el modelo.
+Utilice la base de datos FAISS construida anteriormente para realizar recuperación de contexto a la hora de enviar el prompt con la query. 
 
 ---
 
 ## 📥 ¿Cómo obtener acceso a LLaMA 3.2?
 
-1. Accede a la página oficial del modelo en Hugging Face:  
+1. Acceda a la página oficial del modelo en Hugging Face:  
    👉 [https://huggingface.co/meta-llama](https://huggingface.co/meta-llama)
 
-2. Rellena el formulario de solicitud de Meta:
-   - Usa un email institucional si es posible.
-   - Describe tu propósito (por ejemplo, "TFG sobre búsqueda con IA usando RAG").
-   - Acepta los términos de licencia.
+2. Rellene el formulario de solicitud de Meta:
+   - Use un email institucional si es posible.
+   - Describa tu propósito (por ejemplo, "TFG sobre búsqueda con IA usando RAG").
+   - Acepte los términos de licencia.
 
-3. Una vez aprobado, podrás descargarlo con `transformers`:
+3. Una vez aprobado, podrá descargarlo con `transformers`:
 
 ```python
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -149,10 +150,10 @@ model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-Llama-3-3B")
 
 ---
 
-## 🧠 ¿Cómo funciona el sistema?
+## 🧠 Funcionamiento resumido del sistema RAG
 
 1. **Extracción**: El texto se extrae de PDFs y se limpia.
-2. **Vectorización**: Se genera una base de vectores (embeddings) del texto con SentenceTransformers.
+2. **Vectorización**: Se genera una base de vectores (embeddings) del texto.
 3. **Recuperación**: Ante una consulta, se buscan los vectores más cercanos en FAISS.
 4. **Generación**: Se construye un prompt con el contexto recuperado y se genera una respuesta utilizando el modelo LLaMA 3.2.
 
@@ -160,13 +161,13 @@ model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-Llama-3-3B")
 
 ## 🔐 Notas importantes
 
-- Asegúrate de tener suficiente memoria (RAM/GPU) para LLaMA 3.2. Para CPU, puede ser más lento.
+- Asegúrese de tener suficiente memoria (RAM/GPU) para LLaMA 3.2. Para CPU, puede ser más lento.
 - Toda la información sensible (claves, rutas a modelos) debe mantenerse fuera del código fuente público.
 - Este sistema es para **uso académico o personal**. El uso comercial requiere autorización explícita de Meta AI.
 
 ---
 
-## 🤝 Instituciones involucradas
+## 🤝 Justificación del proyecto
 
 Este proyecto forma parte de un **Trabajo de Fin de Grado (TFG)** en Ingeniería Telemática – Universidad de Alcalá.  
 
@@ -175,10 +176,10 @@ Este proyecto forma parte de un **Trabajo de Fin de Grado (TFG)** en Ingeniería
 ## 📄 Licencia
 
 Este proyecto está sujeto a las licencias de uso personal y académico del modelo LLaMA de Meta AI.  
-No redistribuyas el modelo ni lo uses con fines comerciales sin autorización.
+No redistribuya el modelo ni lo uses con fines comerciales sin autorización.
 
 ---
 
-**Autor**: Héctor Núñez Calero 
-**Año**: 2025/2026 s
-**Contacto**: *[hector.nunez@edu.uah.es]*
+**Autor**: Héctor Núñez Calero.
+**Año**: 2025/2026.
+**Contacto**: *[hector.nunez@edu.uah.es]*.
