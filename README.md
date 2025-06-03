@@ -1,4 +1,4 @@
-# 🧠 LLaMA 3.2 RAG System – Local AI Search with Contextual Retrieval
+# 🧠 Sistema de Generación por Recuperación Aumentada (RAG) con LLaMA 3.2 como asistente para consultas
 
 Este repositorio contiene un sistema completo para la integración local de un modelo **LLaMA 3.2** (versión 3B) en un entorno **RAG (Retrieval-Augmented Generation)**. El objetivo es permitir la búsqueda y consulta sobre documentos locales mediante IA generativa y recuperación contextual.
 
