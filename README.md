@@ -131,7 +131,7 @@ Utilice la base de datos FAISS construida anteriormente para realizar recuperaci
 
 ---
 
-## 📥 ¿Cómo obtener acceso a LLaMA 3.2?
+## 📥 Cómo se obtiene el acceso a LLaMA 3.2
 
 1. Acceda a la página oficial del modelo en Hugging Face:  
     [https://huggingface.co/meta-llama](https://huggingface.co/meta-llama)
