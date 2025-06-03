@@ -8,7 +8,8 @@
 #       Proyecto de Fin de Grado:                                       #
 #           Sistema de Generación por Recuperación Aumentada (RAG)      #
 #           con LLaMA 3.2 como asistente para consultas                 #
-#           de artículos farmacéuticos.                                 #
+#           de artículos farmacéuticos del grupo de investigación
+#           de la Universidad de Alcalá.                                 #
 #                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
@@ -28,9 +29,9 @@
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
 
-import fitz  # alias de PyMuPDF -> para leer y extraer los PDFs
-import os # manejo de rutas, carpetas y archivos del equipo
-import re # limpieza de texto mediante expresiones regulares
+import fitz  # alias de PyMuPDF -> para extraer texto de archivos PDF
+import os # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
+import re # limpiar y procesar texto mediante expresiones regulares
 
 
 # Procesar los bloques de texto cada página del PDF, reduciendo espaciados innecesarios y soloexisitiendo los de separación de palabras y párrafos

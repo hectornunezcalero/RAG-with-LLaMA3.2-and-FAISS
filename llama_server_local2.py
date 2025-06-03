@@ -8,7 +8,9 @@
 #       Proyecto de Fin de Grado:                                       #
 #           Sistema de Generación por Recuperación Aumentada (RAG)      #
 #           con LLaMA 3.2 como asistente para consultas                 #
-#           de artículos farmacéuticos.                                 #
+#           de artículos farmacéuticos del grupo de investigación       #
+#           de la Universidad de Alcalá                                 #
+#                                                                       #
 #                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
@@ -28,13 +30,13 @@
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
 
-import os
-import time
-import hashlib
-import torch
-from flask import Flask, request, jsonify
-from dotenv import load_dotenv
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
+import time  # medir tiempos o controlar pausas en la ejecución
+import hashlib  # generar hashes, usándolos como identificadores o para comprobar la integridad
+import torch  # backend PyTorch usado por cliente y vectorizer para ejecutar modelos de embeddings (no se importa explícitamente)
+from flask import Flask, request, jsonify  # proporcionar la API REST al cliente
+from dotenv import load_dotenv  # cargar variables de entorno desde un archivo .env, facilitando la configuración del entorno de ejecución
+from transformers import AutoTokenizer, AutoModelForCausalLM  # cargar el tokenizador del modelo de embeddings
 
 # Carga variables del archivo .env
 load_dotenv()

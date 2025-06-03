@@ -13,14 +13,15 @@ PyMuPDF                           # usado por el data_extractor para extraer tex
 requests                          # usado por el cliente para hacer peticiones al servidor Flask con el modelo
 accelerate                        # usado por el servidor para optimizar la carga y ejecución de modelos de Hugging Face
 python-dotenv                     # usado por el servidor para cargar variables de entorno desde un archivo .env, facilitando la configuración del entorno de ejecución
+tqdm                              # usado por el vectorizer para mostrar barras de progreso durante la indexación de documentos
 
 # ya incluidos por python:
 
 # os                              # usado por data_extractor y vectorizer para manejar rutas, directorios, archivos y operaciones del sistema de ficheros
 # re                              # usado por data_extractor para limpiar y procesar texto mediante expresiones regulares
-# logging                         # usado por vectorizer, llama_client y llama_server para controlar y personalizar la salida de mensajes, avisos y errores
-# pickle                          # usado por llama_client para guardar y cargar los objetos serializados (por ejemplo, los índices)
-# time                            # usado por llama_server para medir tiempos o controlar pausas en la ejecución
-# hashlib                         # usado por llama_server para generar hashes, usándolos como identificadores o para comprobar la integridad
+# logging                         # usado por vectorizer, cliente y servidor para controlar y personalizar la salida de mensajes, avisos y errores
+# pickle                          # usado por el cliente para guardar y cargar los objetos serializados (por ejemplo, los índices)
+# time                            # usado por el server para medir tiempos o controlar pausas en la ejecución
+# hashlib                         # usado por el server para generar hashes, usándolos como identificadores o para comprobar la integridad
 
 

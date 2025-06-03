@@ -8,8 +8,8 @@
 #       Proyecto de Fin de Grado:                                       #
 #           Sistema de Generación por Recuperación Aumentada (RAG)      #
 #           con LLaMA 3.2 como asistente para consultas                 #
-#           de artículos farmacéuticos.                                 #
-#                                                                       #
+#           de artículos farmacéuticos  del grupo de investigación      #
+#           de la Universidad de Alcalá                                 #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
 #       Cotutor: Alberto Palomo Alonso                                  #
@@ -28,14 +28,15 @@
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
 
-from transformers import AutoTokenizer  # tokenizador de texto para el modelo de embeddings elegido de Hugging Face
+from transformers import AutoTokenizer  # cargar el tokenizador del modelo de embeddings de Hugging Face
+from langchain.schema import Document  # estructura estándar 'Document' para cada chunk: texto + metadatos
 from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinado para las búsquedas por similitud
 from langchain_community.docstore.in_memory import InMemoryDocstore  # almacén volatil en memoria RAM de esos objetos 'Document'
-from langchain_huggingface import HuggingFaceEmbeddings  # para sacar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
-from langchain.schema import Document  # estructura estándar 'Document' para cada chunk: texto + metadatos
-import faiss  # motor eficiente de búsqueda vectorial usado por FAISS (backend C++/Python)
-import os  # manejo de rutas, carpetas y archivos del sistema
-import logging  # uso: evitar que se impriman warnings
+from langchain_huggingface import HuggingFaceEmbeddings  # sacar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
+import faiss  # crear y consultar la base de datos vectorial FAISS (versión CPU)
+import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
+import logging  # controlar y personalizar la salida de mensajes, avisos y errores
+from tqdm import tqdm  # mostrar barras de progreso durante la indexación de documentos
 
 # se silencia el warnings que cree que no se va a chunkear y se va a exceder el límite de tokens
 logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
@@ -135,7 +136,7 @@ def vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output):
         for archivo in files:
             if archivo.endswith(".txt"):
                 full_path = os.path.join(dirpath, archivo)
-                rel_path = os.path.relpath(full_path, texts_dir)  # ← esto será el "source" con subcarpeta incluida
+                rel_path = os.path.relpath(full_path, texts_dir)  # esto será el "source" con subcarpeta incluida
 
                 if rel_path in existing_sources:
                     continue
@@ -150,17 +151,20 @@ def vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output):
                         page_content=chunk,
                         metadata={"source": rel_path, "chunk_index": i}
                     ))
+
                 updated_files += 1
 
-    if new_docs:
-        faiss_db.add_documents(new_docs)  # se añaden los nuevos documentos al docstore, calcula sus embeddings y los añade al índice vectorial
-        faiss_db.save_local(output)  # se guardan los resultados en disco (index -> index.faiss y docstore con index_to_docstore_id-> index.pkl)
+        # una vez procesados todos los archivos, se añaden los documentos a la RAM
+        print("Recopilando documentos nuevos en RAM...")
+        faiss_db.add_documents(new_docs)
+
+        # se vuelcan el índice y docstore en disco
+        print("Guardando la nueva información en la base de datos...")
+        faiss_db.save_local(output)
 
         files_num = len({doc.metadata["source"] for doc in faiss_db.docstore._dict.values()})
-        print(f"Actualizado(s) {updated_files} documento(s) nuevo(s) en la base de datos vectorial FAISS.\n"
-              f"Sumándose un total de {files_num} archivos representados.")
-    else:
-        print("No se han detectado nuevos documentos para vectorizar. La base de datos FAISS ya estaba actualizada.")
+        print(f"\nActualizado(s) {updated_files} documento(s) nuevo(s) en la base de datos vectorial FAISS.")
+        print(f"Total de archivos representados en la base de datos vectorial FAISS: {files_num}")
 
 
 # Utilizar los argumentos clave de la función para crear/usar la base de datos FAISS y vectorizar nuevos archivos .txt
@@ -190,16 +194,18 @@ def save_processed_data(texts_dir, output, chunk_len, overlap):
         if deleted_files:
             print(f"Se ha(n) detectado como eliminado(s) {len(deleted_files)} archivo(s). Actualizando por ello la base de datos...")
             faiss_db = create_faiss_db(embedding_model)
+            vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output)
         elif added_files:
             print(f"Se ha(n) detectado {len(added_files)} archivo(s) nuevo(s). Procediendo a actualizar la base de datos...")
+        else:
+            print("La base de datos FAISS ya está actualizada.")
+            return
 
     else:
         # si no existe, creamos una nueva base de datos FAISS vacía
         print("Creando nueva base de datos FAISS...")
         faiss_db = create_faiss_db(embedding_model)
-
-    # vectorizamos los archivos nuevos no indexados aún y se añaden a la base de datos FAISS
-    vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output)
+        vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output)
 
 
 # Función principal
