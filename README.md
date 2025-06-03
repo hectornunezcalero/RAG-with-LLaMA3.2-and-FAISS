@@ -4,7 +4,7 @@ Este repositorio contiene un sistema completo para la integración local de un m
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📁 Estructura del Proyecto (componentes esenciales)
 
 ```
 📦 main_dir/
