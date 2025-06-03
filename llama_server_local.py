@@ -19,7 +19,7 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #
-#       Script: llama_server.py                                         #
+#       Script: llama_server_local.py                                         #
 #       Funciones principales:                                          #
 #        1. Cargar y prepararar el modelo LLaMA 3.2 desde HuggingFace   #
 #        2. Inicializar el servidor Flask                               #

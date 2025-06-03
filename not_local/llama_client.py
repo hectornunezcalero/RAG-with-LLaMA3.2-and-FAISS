@@ -1,3 +1,34 @@
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#       Universidad de Alcalá - Escuela Politécnica Superior            #
+#                                                                       #
+#       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
+#                                                                       #
+#                                                                       #
+#       Proyecto de Fin de Grado:                                       #
+#           Sistema de Generación por Recuperación Aumentada (RAG)      #
+#           con LLaMA 3.2 como asistente para consultas                 #
+#           de artículos farmacéuticos del grupo de investigación       #
+#           de la Universidad de Alcalá                                 #
+#                                                                       #
+#                                                                       #
+#       Autor: Héctor Núñez Calero                                      #
+#       Cotutor: Alberto Palomo Alonso                                  #
+#       Tutor: Jorge Pérez Aracil                                       #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#       Script: llama_client.py                                         #
+#       Funciones:                                                      #
+#        1. Interfaz gráfica con Tkinter para interactuar con LLaMA3.2  #
+#        2. Gestionar las sesiones y enviar consultas al servidor (LLM) #
+#        3. Búscar documentos relacionados con FAISS                    #
+#        4. Visualizar y poder guardar las preguntas y respuestas       #
+#        5. Manejar posibles errores de conexión y respuesta            #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+
+
 from transformers import AutoTokenizer  # cargar el tokenizador del modelo de embeddings de Hugging Face
 from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinado para las búsquedas por similitudor similitud
 from langchain_huggingface import HuggingFaceEmbeddings  # sacar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
@@ -11,7 +42,7 @@ from tkinter import ttk, scrolledtext, filedialog, messagebox  # crear widgets, 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "192.168.79.82"
 API_KEY = "<MASTERKEY>"
-VECTOR_DB_PATH = "../vector_db"
+VECTOR_DB_PATH = "./vector_db"
 MAX_TOKENS = 4096
 
 # Cargar base vectorial
@@ -24,7 +55,7 @@ embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-Mi
 faiss_db = FAISS(index=index, docstore=docstore, index_to_docstore_id=index_to_docstore_id, embedding_function=embedding_model)
 
 
-# Manejar la interacción del cliente con el modelo Llama3.2
+# Clae para manejar la interacción del cliente con el modelo Llama3.2
 class Llama3CLI:
     def __init__(self):
         self.session_id = "0"
@@ -78,6 +109,7 @@ class Llama3CLI:
             return {"response": "Error del servidor", "status_code": response.status_code}
 
 
+# Clase para la interfaz gráfica de usuario (GUI) usando Tkinter
 class Llama3GUI:
     def __init__(self):
         self.client = Llama3CLI()
@@ -88,6 +120,7 @@ class Llama3GUI:
 
         self.build_interface()
 
+    # Construir la interfaz gráfica
     def build_interface(self):
         style = ttk.Style()
         style.theme_use('clam')
@@ -154,6 +187,7 @@ class Llama3GUI:
         self.output_text = scrolledtext.ScrolledText(main_frame, height=15, font=('Segoe UI', 10), wrap=tk.WORD, bg="#ffffff")
         self.output_text.pack(fill="both", expand=True)
 
+    # Enviar la pregunta al servidor y mostrar la respuesta
     def send_question(self):
         question = self.input_text.get("1.0", tk.END).strip()
         if not question:
@@ -168,18 +202,8 @@ class Llama3GUI:
 
         content = None
 
-        if isinstance(response, dict):
-            # Caso ideal: respuesta directa en 'content'
-            if "content" in response:
-                content = response["content"]
-            # Caso del servidor actual: respuesta va en 'response'
-            elif "response" in response:
-                inner = response["response"]
-                # Si es dict con content
-                if isinstance(inner, dict) and "content" in inner:
-                    content = inner["content"]
-                else:
-                    content = inner  # string directo
+        # se extrae el contenido de la respuesta
+        content = response.get("response", "No se recibió una respuesta válida del servidor.")
 
         if content:
             self.output_text.delete("1.0", tk.END)
@@ -187,6 +211,7 @@ class Llama3GUI:
         else:
             self.output_text.insert(tk.END, "No se recibió una respuesta válida del servidor.")
 
+    # Guardar la pregunta y respuesta en un archivo de texto
     def save_to_file(self):
         query = self.input_text.get('1.0', tk.END).strip()
         answer = self.output_text.get('1.0', tk.END).strip()
@@ -206,6 +231,7 @@ class Llama3GUI:
                 f.write("📬 Respuesta:\n")
                 f.write(answer + "\n")
 
+    # Iniciar la ventana principal de la GUI
     def run(self):
         self.window.mainloop()
 
