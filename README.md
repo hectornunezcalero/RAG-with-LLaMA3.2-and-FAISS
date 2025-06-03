@@ -8,16 +8,16 @@ Este repositorio contiene un sistema completo para la integración local de un m
 
 ```
 📦 main_dir/
-├── llama_client_local.py    # Cliente para consultas y sesiones (Tkinter + requests)
-├── llama_server_local.py    # Servidor Flask que aloja LLaMA 3.2 y gestiona generación de texto
-├── vectorizer.py            # Vectorización, embeddings y base de datos FAISS
-├── data_extractor.py        # Extracción de texto desde PDF/TXT y preparación de corpus
+├── setup_venv_windows.txt   # Instrucciones para configurar el entorno virtual en Windows
+├── requirements.txt         # Dependencias necesarias para el entorno virtual
 ├── pdfdata/                 # Carpeta con PDFs originales
 ├── txtdata/                 # Carpeta con texto plano (postprocesado)
+├── data_extractor.py        # Extracción de texto desde PDF a TXT
+├── vectorizer.py            # Vectorización, embeddings y base de datos FAISS
+├── llama_server_local.py    # Servidor Flask que aloja LLaMA 3.2 y gestiona generación de texto
+├── llama_client_local.py    # Cliente para consultas y sesiones (Tkinter + requests)
 ├── vector_db/               # Base de datos vectorial generada con FAISS
-├── requirements.txt         # Dependencias necesarias para el entorno virtual
-├── setup_venv_windows.txt   # Instrucciones para configurar el entorno virtual en Windows
-└── README2.md               # Archivo README del proyecto
+└── README.md                # Archivo README del proyecto
 ```
 
 ---
