@@ -37,6 +37,28 @@ Antes de comenzar, asegúrese de cumplir con lo siguiente:
 
 ---
 
+## 📦 `requirements.txt`
+
+El archivo incluye dependencias esenciales como:
+
+```txt
+flask                        
+faiss-cpu        
+langchain           
+langchain-community        
+langchain-huggingface     
+transformers                  
+sentence-transformers         
+torch                           
+numpy                   
+PyMuPDF                         
+requests                        
+accelerate                      
+python-dotenv
+```
+
+---
+
 ## 🐍 Creación del entorno virtual (Windows)
 
 Siga estos pasos para configurar el entorno virtual en Windows:
@@ -61,28 +83,6 @@ Siga estos pasos para configurar el entorno virtual en Windows:
 ```
 
 Este proceso construye un entorno limpio y aislado, evitando conflictos con otras instalaciones de Python.
-
----
-
-## 📦 `requirements.txt`
-
-El archivo incluye dependencias esenciales como:
-
-```txt
-flask                        
-faiss-cpu        
-langchain           
-langchain-community        
-langchain-huggingface     
-transformers                  
-sentence-transformers         
-torch                           
-numpy                   
-PyMuPDF                         
-requests                        
-accelerate                      
-python-dotenv
-```
 
 ---
 
