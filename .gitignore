@@ -1,16 +1,13 @@
 # el entorno virtual
 venv/
 
-# los archivos grandes / de modelos
-*.dll
-*.lib
-
 # las cachés de Python
 __pycache__/
 *.pyc
 
 # información del proyecto "no relevante"
-.idea
+.idea/*
+!.idea/.gitignore
 
 # documentación pdf, txt y Database
 pdfdata/*
@@ -19,5 +16,3 @@ txtdata/*
 !txtdata/.gitkeep
 vector_db/*
 !vector_db/.gitkeep
-Llama_3.2-3B/*
-!Llama_3.2-3B/.gitkeep
