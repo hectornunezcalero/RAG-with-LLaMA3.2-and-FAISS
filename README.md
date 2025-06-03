@@ -134,14 +134,14 @@ Utilice la base de datos FAISS construida anteriormente para realizar recuperaci
 ## 📥 ¿Cómo obtener acceso a LLaMA 3.2?
 
 1. Acceda a la página oficial del modelo en Hugging Face:  
-   👉 [https://huggingface.co/meta-llama](https://huggingface.co/meta-llama)
+    [https://huggingface.co/meta-llama](https://huggingface.co/meta-llama)
 
 2. Rellene el formulario de solicitud de Meta:
    - Use un email institucional si es posible.
    - Describa tu propósito (por ejemplo, "TFG sobre búsqueda con IA usando RAG").
    - Acepte los términos de licencia.
 
-3. Una vez aprobado, podrá descargarlo con `transformers`:
+3. Una vez aprobado, se descargará con `transformers`:
 
 ```python
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -183,5 +183,7 @@ No redistribuya el modelo ni lo uses con fines comerciales sin autorización.
 ---
 
 **Autor**: Héctor Núñez Calero.
+
 **Año**: 2025/2026.
+
 **Contacto**: *[hector.nunez@edu.uah.es]*.
