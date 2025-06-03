@@ -6,8 +6,7 @@ __pycache__/
 *.pyc
 
 # información del proyecto "no relevante"
-.idea/*
-!.idea/.gitignore
+.idea
 
 # documentación pdf, txt y Database
 pdfdata/*
