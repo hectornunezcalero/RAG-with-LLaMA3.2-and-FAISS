@@ -33,8 +33,7 @@ Antes de comenzar, asegúrese de cumplir con lo siguiente:
   python -m pip install --upgrade pip
   ```
 - Acceso local a **LLaMA 3.2** (previamente autorizado por Meta y descargado vía Hugging Face).
-- Instalación de **Git** (opcional pero recomendado).
-- Uso de una terminal como PowerShell, Terminal de VSCode o Git Bash.
+- Uso de una terminal como PowerShell, CMD o Git Bash.
 
 ---
 
