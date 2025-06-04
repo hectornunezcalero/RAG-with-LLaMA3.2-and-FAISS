@@ -8,8 +8,8 @@
 #       Trabajo de Fin de Grado:                                        #
 #           Sistema de Generación Aumentada por Recuperación (RAG)      #
 #           con LLaMA 3.2 como asistente para consultas                 #
-#           sobre artículos farmacéuticos del grupo de investigación    #
-#           de la Universidad de Alcalá.                                #
+#           sobre artículos farmacéuticos que dispone el                #
+#           grupo de investigación de la Universidad de Alcalá.         #
 #                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
@@ -19,12 +19,12 @@
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #
 #       Script: data_extractor.py                                       #
-#       Funciones:                                                      #
-#        1. Manejar los subdirectorios de pdfdata/ y txtdata/           #
-#        2. Extraer el texto de archivos PDF y limpiarlos               #
-#        3. Detectar estructuras en columnas y ordena el contenido      #
-#        4. Guardar el texto extraído en archivos .txt equivalentes     #
-#        5. Eliminar archivos .txt huérfanos si su PDF ya no existe     #
+#       Funciones principales                                           #
+#        1. Manejar los directorios de pdfdata y txtdata.               #
+#        2. Extraer texto de archivos PDF de pdfdata además de:         #
+#           2.1 Estructurarlos por una o dos columnas.                  #
+#           2.2 limpiarlos de espacios innecesarios.                    #
+#        3. Guardar el texto extraído en archivos .txt en txtdata.      #
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
