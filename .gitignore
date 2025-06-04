@@ -8,6 +8,9 @@ __pycache__/
 # información del proyecto "no relevante"
 .idea
 
+# directorios
+Samples
+
 # documentación pdf, txt y Database
 pdfdata/*
 !pdfdata/.gitkeep
@@ -15,5 +18,3 @@ txtdata/*
 !txtdata/.gitkeep
 vector_db/*
 !vector_db/.gitkeep
-Samples/*
-!Samples/.gitkeep
