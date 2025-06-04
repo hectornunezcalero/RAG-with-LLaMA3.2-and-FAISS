@@ -15,3 +15,5 @@ txtdata/*
 !txtdata/.gitkeep
 vector_db/*
 !vector_db/.gitkeep
+Samples/*
+!Samples/.gitkeep
