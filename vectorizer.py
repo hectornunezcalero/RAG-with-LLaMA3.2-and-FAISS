@@ -8,8 +8,8 @@
 #       Trabajo de Fin de Grado:                                        #
 #           Sistema de Generación Aumentada por Recuperación (RAG)      #
 #           con LLaMA 3.2 como asistente para consultas                 #
-#           sobre artículos farmacéuticos del grupo de investigación    #
-#           de la Universidad de Alcalá.                                #
+#           sobre artículos farmacéuticos que dispone el                #
+#           grupo de investigación de la Universidad de Alcalá.         #
 #                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
@@ -19,7 +19,7 @@
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #
 #       Script: vectorizer.py                                           #
-#       Funciones:                                                      #
+#       Funciones principales:                                                      #
 #        1. Crear/Cargar y guardar la base de datos vectorial FAISS     #
 #        2. Trocear texto con tokenizador de Hugging Face               #
 #        3. Generar vectores con embeddings preentrenados (HF)          #
@@ -30,18 +30,18 @@
 
 
 from transformers import AutoTokenizer  # cargar el tokenizador del modelo de embeddings de Hugging Face
+from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinada a las búsquedas por similitud
 from langchain.schema import Document  # estructura estándar 'Document' para cada chunk: texto + metadatos
-from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinado para las búsquedas por similitud
 from langchain_community.docstore.in_memory import InMemoryDocstore  # almacén volatil en memoria RAM de esos objetos 'Document'
-from langchain_huggingface import HuggingFaceEmbeddings  # sacar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
+from langchain_huggingface import HuggingFaceEmbeddings  # usar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
 import faiss  # crear y consultar la base de datos vectorial FAISS (versión CPU)
 import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
 import logging  # controlar y personalizar la salida de mensajes, avisos y errores
 
-# se silencia el warnings que cree que no se va a chunkear y se va a exceder el límite de tokens
+# se silencia el warning que cree que no se va a chunkear y se va a exceder el límite de tokens
 logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
 
-# se carga el tokenizador del mismo modelo que usarás para embeddings
+# se carga el tokenizador del modelo de embeddings
 tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L12-v2")
 
 
