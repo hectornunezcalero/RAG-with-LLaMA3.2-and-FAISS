@@ -57,7 +57,7 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_LOCAL_PATH)
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_LOCAL_PATH, # desde la ruta local
     device_map={"auto"}, # se automáticamente el modelo a CPU o GPU disponible
-    torch_dtype=torch.float32, # se usa media precisión (float16) para ahorrar memoria y acelerar inferencia en GPU
+    torch_dtype=torch.float16, # se usa media precisión (float16) para ahorrar memoria y acelerar inferencia en GPU
     low_cpu_mem_usage=True, # se optimiza la carga para consumir menos memoria RAM durante el proceso
     trust_remote_code=True, # se permite cargar código personalizado del repositorio del modelo al ser necesario
 )
