@@ -30,8 +30,8 @@
 
 
 import fitz  # alias de PyMuPDF -> extraer texto de archivos PDF
-import os # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
-import re # limpiar y procesar texto mediante expresiones regulares
+import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
+import re  # limpiar y procesar texto mediante expresiones regulares
 
 
 # Procesar los bloques de texto cada página del PDF, reduciendo espaciados innecesarios y existiendo solamente la separación de palabras y párrafos
