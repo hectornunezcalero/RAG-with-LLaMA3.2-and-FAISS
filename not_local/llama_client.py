@@ -8,7 +8,7 @@
 #       Trabajo de Fin de Grado:                                        #
 #           Sistema de Generación Aumentada por Recuperación (RAG)      #
 #           con LLaMA 3.2 como asistente para consultas                 #
-#           de artículos farmacéuticos del grupo de investigación       #
+#           sobre artículos farmacéuticos del grupo de investigación    #
 #           de la Universidad de Alcalá.                                #
 #                                                                       #
 #                                                                       #
