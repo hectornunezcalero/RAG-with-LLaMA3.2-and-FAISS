@@ -29,7 +29,7 @@
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
 
-import fitz  # alias de PyMuPDF -> para extraer texto de archivos PDF
+import fitz  # alias de PyMuPDF -> extraer texto de archivos PDF
 import os # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
 import re # limpiar y procesar texto mediante expresiones regulares
 
