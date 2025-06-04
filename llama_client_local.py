@@ -8,8 +8,8 @@
 #       Trabajo de Fin de Grado:                                        #
 #           Sistema de Generación Aumentada por Recuperación (RAG)      #
 #           con LLaMA 3.2 como asistente para consultas                 #
-#           sobre artículos farmacéuticos del grupo de investigación    #
-#           de la Universidad de Alcalá.                                #
+#           sobre artículos farmacéuticos que dispone el                #
+#           grupo de investigación de la Universidad de Alcalá.         #
 #                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
@@ -18,60 +18,63 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #
-#       Script: llama_client_local.py                                   #
-#       Funciones:                                                      #
-#        1. Interfaz gráfica con Tkinter para interactuar con LLaMA3.2  #
-#        2. Gestionar las sesiones y enviar consultas al servidor (LLM) #
-#        3. Búscar documentos relacionados con FAISS                    #
+#       Script: llama_client.py                                         #
+#       Funciones principales:                                          #
+#        1. Prestar la GUI con Tkinter para interactuar con LLaMA3.2 3B #
+#        2. Búscar documentos relacionados en la base de datos FAISS    #
+#        3. Enviar consultas al servidor que dispone del LLM            #
 #        4. Visualizar y poder guardar las preguntas y respuestas       #
-#        5. Manejar posibles errores de conexión y respuesta            #
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
 
 from transformers import AutoTokenizer  # cargar el tokenizador del modelo de embeddings de Hugging Face
-from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinado para las búsquedas por similitudor similitud
-from langchain_huggingface import HuggingFaceEmbeddings  # sacar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
-import faiss # crear y consultar la base de datos vectorial FAISS (versión CPU)
-import pickle # guardar y cargar los objetos serializados (por ejemplo, los índices)
+from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinada a las búsquedas por similitudor similitud
+from langchain_huggingface import HuggingFaceEmbeddings  # usar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
+import faiss  # crear y consultar la base de datos vectorial FAISS (versión CPU)
+import pickle  # guardar y cargar los objetos serializados (por ejemplo, los índices)
 import requests  # hacer peticiones al servidor Flask con el modelo
 import logging  # controlar y personalizar la salida de mensajes, avisos y errores
 import tkinter as tk  # crear la interfaz gráfica de usuario (GUI)
 from tkinter import ttk, scrolledtext, filedialog, messagebox  # crear widgets, cajas de texto y diálogos de archivos
 
+# Constantes de configuración
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "127.0.0.1"
 API_KEY = "f4d3c2b1a9876543210fedcba"
 VECTOR_DB_PATH = "./vector_db"
 MAX_TOKENS = 4096
 
-# Cargar base vectorial
+# Cargar elementos de la base vectorial
 with open(f"{VECTOR_DB_PATH}/index.pkl", "rb") as f:
     docstore, index_to_docstore_id = pickle.load(f)
 
 index = faiss.read_index(f"{VECTOR_DB_PATH}/index.faiss")
-embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L12-v2")
 
+# Cargar el modelo de embeddings de Hugging Face y cargar la base de datos FAISS
+embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L12-v2")
 faiss_db = FAISS(index=index, docstore=docstore, index_to_docstore_id=index_to_docstore_id, embedding_function=embedding_model)
 
 
-# Clae para manejar la interacción del cliente con el modelo Llama3.2
+# Clase para manejar la interacción del cliente con el modelo Llama3.2
 class Llama3CLI:
     def __init__(self):
         self.session_id = "0"
 
+
     # Procesar la solicitud del usuario
     def process_request(self, question: str):
-        # se encuentran los 5 chunks más relevantes para la pregunta dentro de la base de datos FAISS y se devuelven los objetos 'Document' correspondientes del docstore
+        # se encuentran los 5 chunks más relacionados con la pregunta dentro de la base de datos FAISS,
+        # devolviéndose los objetos 'Document' correspondientes del docstore.
         docs = faiss_db.similarity_search(question, k=5)
         print(f"Chunks rescatados por similitud: {len(docs)}")
-        for doc in docs:
-            chunk_preview = " ".join(doc.page_content.split()[:20]) + " ..."
-            print(f" - {doc.metadata['source']} (chunk {doc.metadata['chunk_index']}): {chunk_preview}")
+        for i, doc in enumerate(docs):
+            chunk_preview = " ".join(doc.page_content.split()[:15]) + " ..."
+            print(f" {i+1}. {doc.metadata['source']} (chunk {doc.metadata['chunk_index']}): {chunk_preview}")
 
         contexto = ""
         for doc in docs:
-            contexto += doc.page_content + "\n--------\n"
+            contexto += doc.page_content + "\n- - - - -\n"
 
         prompt = (
             "Eres un asistente experto en análisis de documentos. "
@@ -117,8 +120,8 @@ class Llama3GUI:
         self.window.title("Llama3.2 - RAG Assistant")
         self.window.geometry("900x700")
         self.window.configure(bg="#f0f2f5")
-
         self.build_interface()
+
 
     # Construir la interfaz gráfica
     def build_interface(self):
@@ -187,6 +190,7 @@ class Llama3GUI:
         self.output_text = scrolledtext.ScrolledText(main_frame, height=15, font=('Segoe UI', 10), wrap=tk.WORD, bg="#ffffff")
         self.output_text.pack(fill="both", expand=True)
 
+
     # Enviar la pregunta al servidor y mostrar la respuesta
     def send_question(self):
         question = self.input_text.get("1.0", tk.END).strip()
@@ -198,9 +202,7 @@ class Llama3GUI:
         self.output_text.delete("1.0", tk.END)
         response = self.client.process_request(question)
         print(f"Consulta respondida sobre {question}")
-        print("--------------------------")
-
-        content = None
+        print("- - - - - - - - - - - - - - - - - - -")
 
         # se extrae el contenido de la respuesta
         content = response.get("response", "No se recibió una respuesta válida del servidor.")
@@ -209,7 +211,8 @@ class Llama3GUI:
             self.output_text.delete("1.0", tk.END)
             self.output_text.insert(tk.END, content)
         else:
-            self.output_text.insert(tk.END, "No se recibió una respuesta válida del servidor.")
+            self.output_text.insert(tk.END, "No se recibió respuesta del servidor.")
+
 
     # Guardar la pregunta y respuesta en un archivo de texto
     def save_to_file(self):
@@ -230,6 +233,7 @@ class Llama3GUI:
                 f.write(query + "\n\n\n")
                 f.write("📬 Respuesta:\n")
                 f.write(answer + "\n")
+
 
     # Iniciar la ventana principal de la GUI
     def run(self):
