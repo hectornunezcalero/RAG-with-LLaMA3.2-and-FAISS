@@ -114,7 +114,7 @@ def process_pdf(pdf_root, txt_root):
     deleted_count = 0
 
     # se recorre el directorio raíz que contiene los subdirectorios de PDFs
-    print("Recorriendo directorio de PDFs...")
+    print("Recorriendo directorio de PDFs y comprobando versiones en texto...")
     for dirpath_pdfs, _, files in os.walk(pdf_root):
         pdf_files = [f for f in files if f.endswith(".pdf")]
 
