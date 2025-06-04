@@ -146,8 +146,16 @@ Utilice la base de datos FAISS construida anteriormente para realizar recuperaci
 ```python
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-3B")
-model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-Llama-3-3B")
+tokenizer = AutoTokenizer.from_pretrained(MODEL_LOCAL_PATH)
+
+# se carga el modelo LLaMA 3.2-3B
+model = AutoModelForCausalLM.from_pretrained(
+    MODEL_LOCAL_PATH,
+    device_map={"auto"},
+    torch_dtype=torch.float32,
+    low_cpu_mem_usage=True,
+    trust_remote_code=True,
+)
 ```
 
 ---
