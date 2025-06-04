@@ -8,8 +8,8 @@
 #       Trabajo de Fin de Grado:                                        #
 #           Sistema de Generación Aumentada por Recuperación (RAG)      #
 #           con LLaMA 3.2 como asistente para consultas                 #
-#           sobre artículos farmacéuticos del grupo de investigación    #
-#           de la Universidad de Alcalá.                                #
+#           sobre artículos farmacéuticos que dispone el                #
+#           grupo de investigación de la Universidad de Alcalá.         #
 #                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
@@ -20,11 +20,10 @@
 #                                                                       #
 #       Script: llama_server_local.py                                   #
 #       Funciones principales:                                          #
-#        1. Cargar y prepararar el modelo LLaMA 3.2 desde HuggingFace   #
+#        1. Cargar y preparar el modelo LLaMA 3.2 desde HuggingFace     #
 #        2. Inicializar el servidor Flask                               #
 #        3. Definir el endpoint REST /request con autenticación         #
-#        4. Procesar el prompt recibido y generar la respuesta          #
-#        5. Gestión de errores, acceso y respuesta en formato JSON      #
+#        4. Procesar el prompt recibido y generar la respuesta en JSON  #
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
@@ -57,8 +56,8 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_LOCAL_PATH)
 # se carga el modelo LLaMA 3.2-3B
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_LOCAL_PATH, # desde la ruta local
-    device_map="auto", # se automáticamente el modelo a CPU o GPU disponible
-    torch_dtype=torch.float16, # se usa media precisión (float16) para ahorrar memoria y acelerar inferencia en GPU
+    device_map={"": "cpu"}, # se automáticamente el modelo a CPU o GPU disponible
+    torch_dtype=torch.float32, # se usa media precisión (float16) para ahorrar memoria y acelerar inferencia en GPU
     low_cpu_mem_usage=True, # se optimiza la carga para consumir menos memoria RAM durante el proceso
     trust_remote_code=True, # se permite cargar código personalizado del repositorio del modelo al ser necesario
 )
@@ -97,11 +96,15 @@ def llama_request():
     if not data:
         return jsonify({"error": "Cuerpo JSON vacío"}), 400
 
-    prompt = data.get("new_prompt")
+    # campos no útiles por el momento
+    # data_pooling = data['pooling']
+    # data_task = data['task']
+    # data_content = data['content']
+    prompt = request.json.get("prompt", "")
     max_tokens = int(data.get("max_tokens", 4096))
 
-    if not prompt:
-        return jsonify({"error": "Falta 'new_prompt' en el cuerpo"}), 400
+    if not isinstance(prompt, str):
+        return jsonify({"error": "'new_prompt' debe ser un string válido"}), 400
 
 
     is_valid, username = validate_api_key(auth)
@@ -112,7 +115,7 @@ def llama_request():
 
 
     try:
-        # se tokeniza el prompt  y se adapta a los 'tensores' del modelo
+        # se tokeniza el prompt y se adapta a los 'tensores' del modelo
         inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 
         # se desactiva el cálculo de gradientes (aprendizaje) para ahorrar memoria y acelerar la inferencia
