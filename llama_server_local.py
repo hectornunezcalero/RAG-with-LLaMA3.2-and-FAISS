@@ -41,7 +41,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM  # cargar el tokeni
 load_dotenv()
 
 API_KEY = None
-HF_TOKEN = os.getenv("HF_TOKEN")  # Token de Hugging Face para el modelo privado LLaMa 3.2-3B
+MODEL_LOCAL_PATH = "./model"  # ruta local al modelo descargado previamente
 
 # ruta del archivo con las claves API
 __keys_path__ = os.getenv("KEYS_PATH", "keys_path.txt")
@@ -51,21 +51,19 @@ LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 # Inicializa Flask
 app = Flask(__name__)
 
-print("Cargando modelo LLaMA 3.2-3B con Hugging Face...")
-tokenizer = AutoTokenizer.from_pretrained(
-    "meta-llama/Llama-3.2-3B",
-    use_auth_token=HF_TOKEN
-)
+print("Cargando modelo LLaMA 3.2-3B...")
+tokenizer = AutoTokenizer.from_pretrained(MODEL_LOCAL_PATH)
 
+# se carga el modelo LLaMA 3.2-3B
 model = AutoModelForCausalLM.from_pretrained(
-    "meta-llama/Llama-3.2-3B",
-    device_map="auto",  # Ajusta para GPU si hay
-    torch_dtype=torch.float16,
-    low_cpu_mem_usage=True,
-    trust_remote_code=True,
-    use_auth_token=HF_TOKEN
+    MODEL_LOCAL_PATH, # desde la ruta local
+    device_map="auto", # se automáticamente el modelo a CPU o GPU disponible
+    torch_dtype=torch.float16, # se usa media precisión (float16) para ahorrar memoria y acelerar inferencia en GPU
+    low_cpu_mem_usage=True, # se optimiza la carga para consumir menos memoria RAM durante el proceso
+    trust_remote_code=True, # se permite cargar código personalizado del repositorio del modelo al ser necesario
 )
 
+# se pone el modelo en modo "evaluación mediante predicciones" (inferencia)
 model.eval()
 print("Modelo cargado correctamente.")
 
@@ -79,7 +77,7 @@ except Exception as e:
 
 @app.route("/")
 def home():
-    return "Servidor API LLaMA 3.2 3B con backend de Hugging Face"
+    return "Servidor API LLaMA 3.2 3B ejecutándose localmente"
 
 @app.route("/request", methods=["POST"])
 def llama_request():
@@ -119,7 +117,7 @@ def llama_request():
 
         # se desactiva el cálculo de gradientes (aprendizaje) para ahorrar memoria y acelerar la inferencia
         with torch.no_grad():
-            outputs = model.generate( # para generar el texto en base a los tensores de entrada y los parámetros proporcionados
+            outputs = model.generate( # para generar el texto basándose en los tensores de entrada y los parámetros proporcionados
                 **inputs, # se pasan los tensores de entrada
                 max_new_tokens=max_tokens,
                 do_sample=True, # se activa el muestreo aleatorio para generar texto más variado
