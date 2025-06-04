@@ -9,7 +9,7 @@ __pycache__/
 .idea
 
 # directorios
-Samples
+Samples/
 
 # documentación pdf, txt y Database
 pdfdata/*
