@@ -13,6 +13,7 @@ PyMuPDF                           # usado por el data_extractor para extraer tex
 requests                          # usado por el cliente para hacer peticiones al servidor Flask con el modelo
 accelerate                        # usado por el servidor para optimizar la carga y ejecución de modelos de Hugging Face
 python-dotenv                     # usado por el servidor para cargar variables de entorno desde un archivo .env, facilitando la configuración del entorno de ejecución
+googletrans                       # usado por el cliente para traducir texto de español a inglés
 
 
 # ya incluidos por python:
@@ -23,5 +24,5 @@ python-dotenv                     # usado por el servidor para cargar variables 
 # pickle                          # usado por el cliente para guardar y cargar los objetos serializados (por ejemplo, los índices)
 # time                            # usado por el server para medir tiempos o controlar pausas en la ejecución
 # hashlib                         # usado por el server para generar hashes, usándolos como identificadores o para comprobar la integridad
-
+# asyncio                         # usado por el cliente para manejar operaciones asíncronas (necesario para la traducción en nuestro caso)
 

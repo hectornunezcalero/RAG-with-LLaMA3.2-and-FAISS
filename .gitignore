@@ -14,7 +14,12 @@ Samples/
 # documentación pdf, txt y Database
 pdfdata/*
 !pdfdata/.gitkeep
+
 txtdata/*
 !txtdata/.gitkeep
+
 vector_db/*
 !vector_db/.gitkeep
+
+model/
+!model/.gitkeep

@@ -55,6 +55,7 @@ PyMuPDF
 requests                        
 accelerate                      
 python-dotenv
+googletrans
 ```
 
 ---

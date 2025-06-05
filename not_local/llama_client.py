@@ -37,6 +37,8 @@ import requests  # hacer peticiones al servidor Flask con el modelo
 import logging  # controlar y personalizar la salida de mensajes, avisos y errores
 import tkinter as tk  # crear la interfaz gráfica de usuario (GUI)
 from tkinter import ttk, scrolledtext, filedialog, messagebox  # crear widgets, cajas de texto y diálogos de archivos
+from googletrans import Translator  # traducir el texto de la pregunta al inglés para el modelo Llama3.2
+import asyncio  # Importar asyncio para manejar corutinas
 
 # Constantes de configuración
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
@@ -66,7 +68,7 @@ class Llama3CLI:
     def process_request(self, question: str):
         # se encuentran los 5 chunks más relacionados con la pregunta dentro de la base de datos FAISS,
         # devolviéndose los objetos 'Document' correspondientes del docstore.
-        docs = faiss_db.similarity_search(question, k=5)
+        docs = faiss_db.similarity_search(question, k=4)
         print(f"Chunks rescatados por similitud: {len(docs)}")
         for i, doc in enumerate(docs):
             chunk_preview = " ".join(doc.page_content.split()[:15]) + " ..."
@@ -193,19 +195,39 @@ class Llama3GUI:
 
     # Enviar la pregunta al servidor y mostrar la respuesta
     def send_question(self):
-        question = self.input_text.get("1.0", tk.END).strip()
-        if not question:
+        es_question = self.input_text.get("1.0", tk.END).strip()
+        if not es_question:
             messagebox.showwarning("Advertencia", "Debes escribir una pregunta antes de enviarla.")
             return
 
-        print(f"Resolviendo a la pregunta: {question}")
-        self.output_text.delete("1.0", tk.END)
+        print(f"Resolviendo a la pregunta: {es_question}")
+
+        # se traduce la pregunta al inglés para obtener mejor resultado
+        translator = Translator()
+        try:
+            question = asyncio.run(translator.translate(es_question, dest='en')).text
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al traducir la pregunta: {e}")
+            return
+
         response = self.client.process_request(question)
-        print(f"Consulta respondida sobre {question}")
+        print(f"Consulta respondida sobre {es_question}")
         print("- - - - - - - - - - - - - - - - - - -")
 
-        # se extrae el contenido de la respuesta
-        content = response.get("response", "No se recibió una respuesta válida del servidor.")
+        content = None
+
+        if isinstance(response, dict):
+            # Caso ideal: respuesta directa en 'content'
+            if "content" in response:
+                content = response["content"]
+            # Caso del servidor actual: respuesta va en 'response'
+            elif "response" in response:
+                inner = response["response"]
+                # Si es dict con content
+                if isinstance(inner, dict) and "content" in inner:
+                    content = inner["content"]
+                else:
+                    content = inner  # string directo
 
         if content:
             self.output_text.delete("1.0", tk.END)

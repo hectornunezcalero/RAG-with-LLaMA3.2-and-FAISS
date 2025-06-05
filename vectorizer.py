@@ -67,20 +67,18 @@ def chunker(text, chunk_len, overlap):
     for i in range(0, len(tokens_ids), chunk_len - overlap):
         # se almacenan los offsets de los tokens del chunk actual
         chunk_offsets = tokens_offsets[i:chunk_len + i]
+        if not chunk_offsets:
+            continue
 
-        # si el conjunto de offsets (chunk) tiene 180 tokens de tamaño, se entiende como 'start' al primer elemento del primer offset del chunk (comienzo del primer token)
-        if chunk_offsets:
-            start = chunk_offsets[0][0]
-        else: # si el tamaño del chunk no llega a los 180 tokens para formar un chunk válido, 'start' se establece como el elemento 'i' del primer offset del token del chunk restante
-            start = tokens_offsets[i][0]
-
+        # se entiende como 'start' al primer elemento del primer offset del chunk (comienzo del primer token)
+        start = chunk_offsets[0][0]
         # se establece como 'end' al último elemento del último offset del token del chunk
-        end = tokens_offsets[-1][1]
-
+        end = chunk_offsets[-1][1]
         # se forma el texto del chunk
         chunk_text = text[start:end].strip()
 
-        chunks.append(chunk_text)
+        if chunk_text and len(chunk_text) > 0:
+            chunks.append(chunk_text)
 
     return chunks
 
@@ -186,17 +184,17 @@ def vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output):
 
                 updated_files += 1
 
-        # una vez procesados todos los archivos, se añaden los documentos a la RAM
-        print("Recopilando todos los nuevos documentos creados en la RAM...")
-        faiss_db.add_documents(new_docs)
+    # una vez procesados todos los archivos, se añaden los documentos a la RAM
+    print("Recopilando todos los nuevos documentos creados en la RAM...")
+    faiss_db.add_documents(new_docs)
 
-        # se vuelcan el índice y docstore en disco
-        print("Guardando la nueva información en la base de datos FAISS local...")
-        faiss_db.save_local(output)
+    # se vuelcan el índice y docstore en disco
+    print("Guardando la nueva información en la base de datos FAISS local...")
+    faiss_db.save_local(output)
 
-        files_num = len({doc.metadata["source"] for doc in faiss_db.docstore._dict.values()})
-        print(f"\nActualizado(s) {updated_files} archivo(s) nuevo(s) en la base de datos vectorial FAISS.")
-        print(f"Sumando un total de {files_num} representados.")
+    files_num = len({doc.metadata["source"] for doc in faiss_db.docstore._dict.values()})
+    print(f"\nActualizado(s) {updated_files} archivo(s) nuevo(s) en la base de datos vectorial FAISS.")
+    print(f"Sumando un total de {files_num} representados.")
 
 
 # Crear/Actualizar en disco la base de datos FAISS con los archivos .txt procesados
@@ -251,4 +249,4 @@ def save_processed_data(texts_dir, output, chunk_len, overlap):
 
 # Función principal
 if __name__ == "__main__":
-    save_processed_data("./txtdata", "./vector_db", 180, 40)
+    save_processed_data("./txtdata", "./vector_db", 190, 40)
