@@ -56,7 +56,7 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_LOCAL_PATH)
 # se carga el modelo LLaMA 3.2-3B
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_LOCAL_PATH, # desde la ruta local
-    device_map={"auto"}, # se automáticamente el modelo a CPU o GPU disponible
+    device_map= "auto", # se automáticamente el modelo a CPU o GPU disponible
     torch_dtype=torch.float16, # se usa media precisión (float16) para ahorrar memoria y acelerar inferencia en GPU
     low_cpu_mem_usage=True, # se optimiza la carga para consumir menos memoria RAM durante el proceso
     trust_remote_code=True, # se permite cargar código personalizado del repositorio del modelo al ser necesario
@@ -100,7 +100,7 @@ def llama_request():
     # data_pooling = data['pooling']
     # data_task = data['task']
     # data_content = data['content']
-    prompt = request.json.get("prompt", "")
+    prompt = data.get("prompt", "")
     max_tokens = int(data.get("max_tokens", 4096))
 
     if not isinstance(prompt, str):
