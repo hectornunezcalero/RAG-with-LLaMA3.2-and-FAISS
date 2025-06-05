@@ -63,12 +63,11 @@ class Llama3CLI:
     def __init__(self):
         self.session_id = "0"
 
-
     # Procesar la solicitud del usuario
     def process_request(self, question: str):
         # se encuentran los 5 chunks más relacionados con la pregunta dentro de la base de datos FAISS,
         # devolviéndose los objetos 'Document' correspondientes del docstore.
-        docs = faiss_db.similarity_search(question, k=4)
+        docs = faiss_db.similarity_search(question, k=6)
         print(f"Chunks rescatados por similitud: {len(docs)}")
         for i, doc in enumerate(docs):
             chunk_preview = " ".join(doc.page_content.split()[:15]) + " ..."
@@ -214,27 +213,41 @@ class Llama3GUI:
         print(f"Consulta respondida sobre {es_question}")
         print("- - - - - - - - - - - - - - - - - - -")
 
-        content = None
+        if isinstance(response, dict) and response.get("status_code") == 200:
+            # Extraer el contenido de la respuesta
+            content = response.get("response", {})
+            if isinstance(content, dict) and "content" in content:
+                # Si el contenido es un diccionario, extraer el campo "content"
+                content = content["content"]
+            else:
+                # Si no se encuentra el campo "content", usar el contenido tal cual
+                content = str(content)
 
-        if isinstance(response, dict):
-            # Caso ideal: respuesta directa en 'content'
-            if "content" in response:
-                content = response["content"]
-            # Caso del servidor actual: respuesta va en 'response'
-            elif "response" in response:
-                inner = response["response"]
-                # Si es dict con content
-                if isinstance(inner, dict) and "content" in inner:
-                    content = inner["content"]
-                else:
-                    content = inner  # string directo
-
-        if content:
             self.output_text.delete("1.0", tk.END)
-            self.output_text.insert(tk.END, content)
-        else:
-            self.output_text.insert(tk.END, "No se recibió una respuesta válida del servidor.")
+            start = 0
+            while True:
+                start_idx = content.find("**", start)
+                if start_idx == -1:
+                    self.output_text.insert(tk.END, content[start:])
+                    break
+                end_idx = content.find("**", start_idx + 2)
+                if end_idx == -1:
+                    self.output_text.insert(tk.END, content[start:])
+                    break
 
+                # Insertar texto normal antes del **
+                self.output_text.insert(tk.END, content[start:start_idx])
+                # Insertar texto en negrita
+                bold_text = content[start_idx + 2:end_idx]
+                self.output_text.insert(tk.END, bold_text, "bold")
+                start = end_idx + 2
+
+            self.output_text.tag_configure("bold", font=("Segoe UI", 10, "bold"))
+
+
+        else:
+            self.output_text.delete("1.0", tk.END)
+            self.output_text.insert(tk.END, "No se recibió una respuesta válida del servidor.")
 
     # Guardar la pregunta y respuesta en un archivo de texto
     def save_to_file(self):
