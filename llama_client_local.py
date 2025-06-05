@@ -18,7 +18,7 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #
-#       Script: llama_client.py                                         #
+#       Script: llama_client_local.py                                   #
 #       Funciones principales:                                          #
 #        1. Prestar la GUI con Tkinter para interactuar con LLaMA3.2 3B #
 #        2. Búscar documentos relacionados en la base de datos FAISS    #
@@ -37,6 +37,8 @@ import requests  # hacer peticiones al servidor Flask con el modelo
 import logging  # controlar y personalizar la salida de mensajes, avisos y errores
 import tkinter as tk  # crear la interfaz gráfica de usuario (GUI)
 from tkinter import ttk, scrolledtext, filedialog, messagebox  # crear widgets, cajas de texto y diálogos de archivos
+from googletrans import Translator  # traducir el texto de la pregunta al inglés para el modelo Llama3.2
+import asyncio  # Importar asyncio para manejar corutinas
 
 # Constantes de configuración
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
@@ -56,17 +58,16 @@ embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-Mi
 faiss_db = FAISS(index=index, docstore=docstore, index_to_docstore_id=index_to_docstore_id, embedding_function=embedding_model)
 
 
-# Clase para manejar la interacción del cliente con el modelo Llama3.2
+# Clae para manejar la interacción del cliente con el modelo Llama3.2
 class Llama3CLI:
     def __init__(self):
         self.session_id = "0"
-
 
     # Procesar la solicitud del usuario
     def process_request(self, question: str):
         # se encuentran los 5 chunks más relacionados con la pregunta dentro de la base de datos FAISS,
         # devolviéndose los objetos 'Document' correspondientes del docstore.
-        docs = faiss_db.similarity_search(question, k=5)
+        docs = faiss_db.similarity_search(question, k=6)
         print(f"Chunks rescatados por similitud: {len(docs)}")
         for i, doc in enumerate(docs):
             chunk_preview = " ".join(doc.page_content.split()[:15]) + " ..."
@@ -159,7 +160,7 @@ class Llama3GUI:
             padx=10,
             pady=6,
             cursor="hand2",
-            command=self.send_question  # ← AÑADIDO
+            command=self.send_question
         )
         self.send_button.pack(pady=(0, 5))
 
@@ -193,26 +194,60 @@ class Llama3GUI:
 
     # Enviar la pregunta al servidor y mostrar la respuesta
     def send_question(self):
-        question = self.input_text.get("1.0", tk.END).strip()
-        if not question:
+        es_question = self.input_text.get("1.0", tk.END).strip()
+        if not es_question:
             messagebox.showwarning("Advertencia", "Debes escribir una pregunta antes de enviarla.")
             return
 
-        print(f"Resolviendo a la pregunta: {question}")
-        self.output_text.delete("1.0", tk.END)
+        print(f"Resolviendo a la pregunta: {es_question}")
+
+        # se traduce la pregunta al inglés para obtener mejor resultado
+        translator = Translator()
+        try:
+            question = asyncio.run(translator.translate(es_question, dest='en')).text
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al traducir la pregunta: {e}")
+            return
+
         response = self.client.process_request(question)
-        print(f"Consulta respondida sobre {question}")
+        print(f"Consulta respondida sobre {es_question}")
         print("- - - - - - - - - - - - - - - - - - -")
 
-        # se extrae el contenido de la respuesta
-        content = response.get("response", "No se recibió una respuesta válida del servidor.")
+        if isinstance(response, dict) and response.get("status_code") == 200:
+            # Extraer el contenido de la respuesta
+            content = response.get("response", {})
+            if isinstance(content, dict) and "content" in content:
+                # Si el contenido es un diccionario, extraer el campo "content"
+                content = content["content"]
+            else:
+                # Si no se encuentra el campo "content", usar el contenido tal cual
+                content = str(content)
 
-        if content:
             self.output_text.delete("1.0", tk.END)
-            self.output_text.insert(tk.END, content)
-        else:
-            self.output_text.insert(tk.END, "No se recibió respuesta del servidor.")
+            start = 0
+            while True:
+                start_idx = content.find("**", start)
+                if start_idx == -1:
+                    self.output_text.insert(tk.END, content[start:])
+                    break
+                end_idx = content.find("**", start_idx + 2)
+                if end_idx == -1:
+                    self.output_text.insert(tk.END, content[start:])
+                    break
 
+                # Insertar texto normal antes del **
+                self.output_text.insert(tk.END, content[start:start_idx])
+                # Insertar texto en negrita
+                bold_text = content[start_idx + 2:end_idx]
+                self.output_text.insert(tk.END, bold_text, "bold")
+                start = end_idx + 2
+
+            self.output_text.tag_configure("bold", font=("Segoe UI", 10, "bold"))
+
+
+        else:
+            self.output_text.delete("1.0", tk.END)
+            self.output_text.insert(tk.END, "No se recibió una respuesta válida del servidor.")
 
     # Guardar la pregunta y respuesta en un archivo de texto
     def save_to_file(self):
