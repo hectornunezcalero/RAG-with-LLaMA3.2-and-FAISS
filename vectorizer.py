@@ -249,4 +249,4 @@ def save_processed_data(texts_dir, output, chunk_len, overlap):
 
 # Función principal
 if __name__ == "__main__":
-    save_processed_data("./txtdata", "./vector_db", 190, 40)
+    save_processed_data("./txtdata", "./vector_db", 180, 30)
