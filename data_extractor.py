@@ -265,6 +265,10 @@ def process_pdf(pdf_root, txt_root):
     # se recorre el directorio raíz que contiene los subdirectorios de PDFs
     print("Recorriendo directorio de PDFs y comprobando versiones en texto...")
     for dirpath_pdfs, _, files in os.walk(pdf_root):
+
+        if dirpath_pdfs == pdf_root:
+            continue
+
         pdf_files = [f for f in files if f.endswith(".pdf")]
 
         if not pdf_files:
