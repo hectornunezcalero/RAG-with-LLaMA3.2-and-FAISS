@@ -39,12 +39,13 @@ import tkinter as tk  # crear la interfaz gráfica de usuario (GUI)
 from tkinter import ttk, scrolledtext, filedialog, messagebox  # crear widgets, cajas de texto y diálogos de archivos
 from googletrans import Translator  # traducir el texto de la pregunta al inglés para el modelo Llama3.2
 import asyncio  # Importar asyncio para manejar corutinas
+from datetime import datetime  #  manejar fechas y horas
+import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
 
-# Constantes de configuración
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "127.0.0.1"
 API_KEY = "f4d3c2b1a9876543210fedcba"
-VECTOR_DB_PATH = "./vector_db"
+VECTOR_DB_PATH = ".\\vector_db"
 MAX_TOKENS = 4096
 
 # Cargar elementos de la base vectorial
@@ -62,6 +63,8 @@ faiss_db = FAISS(index=index, docstore=docstore, index_to_docstore_id=index_to_d
 class Llama3CLI:
     def __init__(self):
         self.session_id = "0"
+        self.last_sources = []
+        self.last_docs = []
 
     # Procesar la solicitud del usuario
     def process_request(self, question: str):
@@ -105,6 +108,9 @@ class Llama3CLI:
             return {"response": "No se pudo conectar al servidor", "status_code": "Host Unreachable"}
 
         if response.status_code == 200:
+            self.last_sources = list({doc.metadata['source'] for doc in docs})
+            self.last_docs = docs
+
             resp_json = response.json()
             self.session_id = resp_json.get("session_id", "0")
             return resp_json
@@ -167,7 +173,7 @@ class Llama3GUI:
         # Botón para guardar en archivo
         self.save_button = tk.Button(
             main_frame,
-            text="💾 Guardar pregunta y respuesta",
+            text="💾 Guardar pregunta, respuesta y archivos provenientes",
             font=('Segoe UI', 10),
             bg="#34a853",
             fg="white",
@@ -198,6 +204,7 @@ class Llama3GUI:
         if not es_question:
             messagebox.showwarning("Advertencia", "Debes escribir una pregunta antes de enviarla.")
             return
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         print(f"Resolviendo a la pregunta: {es_question}")
 
@@ -210,6 +217,9 @@ class Llama3GUI:
             return
 
         response = self.client.process_request(question)
+        self.last_sources = self.client.last_sources
+        self.last_docs = self.client.last_docs
+
         print(f"Consulta respondida sobre {es_question}")
         print("- - - - - - - - - - - - - - - - - - -")
 
@@ -251,8 +261,10 @@ class Llama3GUI:
 
     # Guardar la pregunta y respuesta en un archivo de texto
     def save_to_file(self):
+        timestamp = getattr(self, "last_timestamp", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         query = self.input_text.get('1.0', tk.END).strip()
         answer = self.output_text.get('1.0', tk.END).strip()
+        docs = getattr(self, "last_docs", [])
 
         if not query or not answer:
             messagebox.showwarning("Aviso", "No hay contenido para guardar.")
@@ -260,14 +272,21 @@ class Llama3GUI:
 
         file_path = filedialog.asksaveasfilename(defaultextension=".txt",
                                                  filetypes=[("Text files", "*.txt")],
-                                                 title="Guardar pregunta y respuesta")
-
+                                                 title="Guardado de pregunta, respuesta y archivos provenientes",)
         if file_path:
             with open(file_path, "w", encoding="utf-8") as f:
-                f.write("🧾 Pregunta:\n")
+                f.write(f"🕓 Fecha y hora de la pregunta: {timestamp}\n\n")
+
+                f.write("🧾 Pregunta realizada:\n")
                 f.write(query + "\n\n\n")
-                f.write("📬 Respuesta:\n")
-                f.write(answer + "\n")
+                f.write("📬 Respuesta correspondiente:\n")
+                f.write(answer + "\n\n\n")
+
+                f.write("📂 Archivos fuente utilizados:\n")
+                for i, doc in enumerate(docs):
+                    source_path = os.path.normpath(doc.metadata.get("source", "desconocido"))
+                    chunk_preview = " ".join(doc.page_content.split()[:15]) + " ..."
+                    f.write(f" {i + 1}. {source_path}: {chunk_preview}\n")
 
 
     # Iniciar la ventana principal de la GUI
