@@ -42,8 +42,6 @@ import asyncio  # manejar corutinas
 from datetime import datetime  #  manejar fechas y horas
 import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
 
-
-# Constantes de configuración
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "192.168.79.82"
 API_KEY = "<MASTERKEY>"
