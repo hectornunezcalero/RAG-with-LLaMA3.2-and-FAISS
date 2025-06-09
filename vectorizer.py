@@ -37,6 +37,12 @@ import faiss  # consultar la base de datos vectorial FAISS (versión CPU)
 import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
 import logging  # controlar y personalizar la salida de mensajes, avisos y errores
 
+TXT_ROOT_PATH = ".\\txtdata"
+DATABASE_PATH = ".\\vector_db"
+CHUNK_LEN = 180
+OVERLAP = 30
+
+
 # se silencia el warning que cree que no se va a chunkear y se va a exceder el límite de tokens
 logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
 
@@ -198,7 +204,7 @@ def vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output):
 
 
 # Crear/Actualizar en disco la base de datos FAISS con los archivos .txt procesados
-def save_processed_data(texts_dir, output, chunk_len, overlap):
+def save_processed_data(texts_dir: str, output: str, chunk_len, overlap):
 
     # se tratará con los archivos .txt existentes en el directorio txt_data
     print("Detectando todos los archivos extraidos en formato texto...")
@@ -249,4 +255,4 @@ def save_processed_data(texts_dir, output, chunk_len, overlap):
 
 # Función principal
 if __name__ == "__main__":
-    save_processed_data("./txtdata", "./vector_db", 180, 30)
+    save_processed_data(TXT_ROOT_PATH, DATABASE_PATH, CHUNK_LEN, OVERLAP)
