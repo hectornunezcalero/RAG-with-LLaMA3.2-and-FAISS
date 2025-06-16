@@ -200,27 +200,28 @@ class Llama3GUI:
 
     # Enviar la pregunta al servidor y mostrar la respuesta
     def send_question(self):
-        es_question = self.input_text.get("1.0", tk.END).strip()
-        if not es_question:
+        question = self.input_text.get("1.0", tk.END).strip()
+        if not question:
             messagebox.showwarning("Advertencia", "Debes escribir una pregunta antes de enviarla.")
             return
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.client.last_timestamp = timestamp
 
-        print(f"Resolviendo a la pregunta: {es_question}")
+        print(f"Resolviendo a la pregunta: {question}")
 
         # se traduce la pregunta al inglés para obtener mejor resultado
         translator = Translator()
         try:
-            question = asyncio.run(translator.translate(es_question, dest='en')).text
+            tr_question = asyncio.run(translator.translate(question, dest='en')).text
         except Exception as e:
             messagebox.showerror("Error", f"Error al traducir la pregunta: {e}")
             return
 
-        response = self.client.process_request(question)
+        response = self.client.process_request(tr_question)
         self.last_sources = self.client.last_sources
         self.last_docs = self.client.last_docs
 
-        print(f"Consulta respondida sobre {es_question}")
+        print(f"Consulta respondida sobre {question}")
         print("- - - - - - - - - - - - - - - - - - -")
 
         if isinstance(response, dict) and response.get("status_code") == 200:

@@ -9,12 +9,11 @@ transformers                      # usado por el vectorizer para cargar el token
 sentence-transformers             # usado internamente por langchain-huggingface para cargar modelos de embeddings basados en Sentence Transformers
 torch                             # backend PyTorch usado por cliente y vectorizer para ejecutar modelos de embeddings (no se importa explícitamente)
 numpy                             # usado por el servidor para manejo numérico que conlleve arrays
-PyMuPDF                           # usado por el data_extractor para extraer texto de archivos PDF
+PyMuPDF                           # (fitz) usado por el data_extractor para extraer texto de archivos PDF
 requests                          # usado por el cliente para hacer peticiones al servidor Flask con el modelo
 accelerate                        # usado por el servidor para optimizar la carga y ejecución de modelos de Hugging Face
 python-dotenv                     # usado por el servidor para cargar variables de entorno desde un archivo .env, facilitando la configuración del entorno de ejecución
 googletrans                       # usado por el cliente para traducir texto de español a inglés
-
 
 # ya incluidos por python:
 
@@ -25,4 +24,4 @@ googletrans                       # usado por el cliente para traducir texto de 
 # time                            # usado por el server para medir tiempos o controlar pausas en la ejecución
 # hashlib                         # usado por el server para generar hashes, usándolos como identificadores o para comprobar la integridad
 # asyncio                         # usado por el cliente para manejar operaciones asíncronas (necesario para la traducción en nuestro caso)
-
+# import datetime                 #  manejar fechas y horas

@@ -191,7 +191,7 @@ def vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output):
                 updated_files += 1
 
     # una vez procesados todos los archivos, se añaden los documentos a la RAM
-    print("Recopilando todos los nuevos documentos creados en la RAM...")
+    print("Recopilando en la RAM todos los nuevos documentos creados...")
     faiss_db.add_documents(new_docs)
 
     # se vuelcan el índice y docstore en disco

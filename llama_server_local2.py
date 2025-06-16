@@ -1,16 +1,18 @@
 import time
 import hashlib
 import numpy as np
-from ..llama32 import Llama3
-from ..__special__ import logging, __keys_path__
+from Llama32 import Llama3
+import logging
 from flask import Flask, request, jsonify
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 
+__keys_path__ = "keys_path.txt"  # Path to the API keys file
+
 
 # Server side:
 class Llama3Server:
-    def __init__(self, host='192.168.79.82', port=LLAMA_PORT):
+    def __init__(self, host='0.0.0.0', port=LLAMA_PORT):
         """
         This class is a server for the Llama3.2 API.
         :param host: The IP to host the service.
