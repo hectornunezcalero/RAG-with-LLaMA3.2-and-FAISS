@@ -27,7 +27,6 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
-
 import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
 import time  # medir tiempos o controlar pausas en la ejecución
 import hashlib  # generar hashes, usándolos como identificadores o para comprobar la integridad

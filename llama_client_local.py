@@ -27,7 +27,6 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
-
 from transformers import AutoTokenizer  # cargar el tokenizador del modelo de embeddings de Hugging Face
 from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinada a las búsquedas por similitudor similitud
 from langchain_huggingface import HuggingFaceEmbeddings  # usar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos

@@ -27,7 +27,6 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
-
 from transformers import AutoTokenizer  # cargar el tokenizador del modelo de embeddings de Hugging Face
 from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinada a las búsquedas por similitud
 from langchain.schema import Document  # estructura estándar 'Document' para cada chunk: texto + metadatos
@@ -53,7 +52,6 @@ embedding_model = HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2')
 
 # Dividir el texto en chunks para facilitar la búsqueda de similitudes semánticas
 def chunker(text, chunk_len, overlap):
-
     # 'encoding' recopilará los IDs de los tokens del modelo y los offsets de cada token en el texto para su posterior uso
     encoding = tokenizer(text, return_offsets_mapping=True, add_special_tokens=False)
 
@@ -107,7 +105,6 @@ def load_faiss_db(output):
 
 # Crear la base de datos FAISS en memoria RAM
 def create_faiss_db():
-
     # primeramente, se crean el índice-vector, docstore y la relación índice-vector<->docstore
     dimension = len(embedding_model.embed_query("test")) # dimensión vectorial para el modelo de embeddings (384 dimensiones para 'all-MiniLM-L12-v2')
     index = faiss.IndexFlatL2(dimension) # objeto faiss con los índices y vectores N-dimensionales de la bbdd FAISS
@@ -152,7 +149,6 @@ def create_faiss_db():
 
 # Vectorizar y añadir los nuevos archivos .txt a la base de datos
 def vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output):
-
     # se tendrán en cuenta los documentos de los chunks ya existentes en la base de datos para evitar duplicados
     print("Detectando los archivos de texto existentes en la base de datos...")
     existing_sources = {
@@ -205,7 +201,6 @@ def vectorize_new_txt_files(texts_dir, faiss_db, chunk_len, overlap, output):
 
 # Crear/Actualizar en disco la base de datos FAISS con los archivos .txt procesados
 def save_processed_data(texts_dir: str, output: str, chunk_len, overlap):
-
     # se tratará con los archivos .txt existentes en el directorio txt_data
     print("Detectando todos los archivos extraidos en formato texto...")
     current_files = {
