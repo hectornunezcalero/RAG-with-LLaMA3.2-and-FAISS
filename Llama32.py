@@ -17,7 +17,7 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #
-#       Script: LLaMa32.py                                              #
+#       Script: Llama32.py                                              #
 #       Funciones principales:                                          #
 #        1. Inicializar el modelo LLaMa 3.2 3B localmente               #
 #        2. Configurar tareas de NLP: generación, extracción de         #
