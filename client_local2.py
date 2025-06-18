@@ -17,7 +17,7 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #
-#       Script: llama_client.py                                         #
+#       Script: client_local2.py                                        #
 #       Funciones principales:                                          #
 #        1. Prestar la GUI con Tkinter para interactuar con LLaMa 3.2   #
 #           a modo de pregunta-respuesta                                #
