@@ -1,7 +1,33 @@
-# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
-#                                                           #
-#                                                           #
-# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#       Universidad de Alcalá - Escuela Politécnica Superior            #
+#                                                                       #
+#       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
+#                                                                       #
+#                                                                       #
+#       Trabajo de Fin de Grado:                                        #
+#           Sistema de Generación Aumentada por Recuperación (RAG)      #
+#           con LLaMA 3.2 como asistente para consultas                 #
+#           sobre documentos PDF                                        #
+#                                                                       #
+#                                                                       #
+#       Autor: Héctor Núñez Calero                                      #
+#       Cotutor: Alberto Palomo Alonso                                  #
+#       Tutor: Jorge Pérez Aracil                                       #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#       Script: LLaMa32.py                                              #
+#       Funciones principales:                                          #
+#        1. Inicializar el modelo LLaMa 3.2 3B localmente               #
+#        2. Configurar tareas de NLP: generación, extracción de         #
+#           características, clasificación (no implementada)            #
+#        3. Gestionar tokenizador y pipeline de transformers            #
+#        4. Ejecutar la tarea seleccionada y manejar la generación      #
+#           y procesamiento de textos                                   #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+
 
 import numpy as np
 import torch
@@ -174,6 +200,3 @@ class Llama3:
 
     def __repr__(self):
         return f'<Llama3.2(task={self._task_map[self.task][0]}, max_tokens={self.max_tokens})>'
-# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
-#                        END OF FILE                        #
-# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #

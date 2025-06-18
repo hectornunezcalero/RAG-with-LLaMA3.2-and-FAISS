@@ -12,7 +12,7 @@ __keys_path__ = "keys_path.txt"  # Path to the API keys file
 
 # Server side:
 class Llama3Server:
-    def __init__(self, host='0.0.0.0', port=LLAMA_PORT):
+    def __init__(self, host='192.168.XX.XX', port=LLAMA_PORT):
         """
         This class is a server for the Llama3.2 API.
         :param host: The IP to host the service.
@@ -20,11 +20,13 @@ class Llama3Server:
         """
         logging.info('[+] Llama3.2-Server initialized.')
         self.app = Flask(__name__)
-        self.llama = Llama3()
+        # las sesiones se guardan en un diccionario:
+        self.sessions = {}
         # Inline declaration:
         self.app.route('/request', methods=['POST'])(self.query)
-        # Run the server:
-        self.app.run(host, port)
+        # se inicializa flask con el host y el puerto especificados, además de permitirse el uso de múltiples hilos:
+        self.app.run(host, port, threaded=True)
+
 
     def query(self):
         """
@@ -53,16 +55,26 @@ class Llama3Server:
         data_max_tokens = data['max_tokens']
         new_prompt = data.get('new_prompt', None)
 
-        # Set up llama:
-        self.llama.set_task(data_task)
-        self.llama.pooling = data_pooling
+        # Obtener o crear la instancia para cada sesión
+        if session not in self.sessions:
+            self.sessions[session] = Llama3()
+
+        llama_instance = self.sessions[session]
+        llama_instance.set_task(data_task)
+        llama_instance.pooling = data_pooling
+
+        """ antes
         if new_prompt:
             self.llama.set_prompt(new_prompt)
-        # all: Session.
+        """
+
+        # si la sesión es nueva o no hay mensajes previos, se establece el nuevo prompt:
+        if session == '0' or not llama_instance.messages:
+            llama_instance.set_prompt(new_prompt)
 
         try:
-            # Process the content:
-            answer = self.llama(*data_content, tokens=data_max_tokens)
+            # procesar el contenido y obtener la respuesta de cada instancia de Llama3:
+            answer = llama_instance(*data_content, tokens=data_max_tokens)
             if isinstance(answer, list):
                 new_answer = list()
                 for item in answer:

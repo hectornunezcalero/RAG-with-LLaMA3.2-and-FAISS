@@ -45,7 +45,7 @@ import threading  # manejar tareas simultáneamente
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "192.168.XX.XX"
-API_KEY = "<MASTERKEY>"
+API_KEY = "f4d3c2b1a9876543210fedcba"
 VECTOR_DB_PATH = "./vector_db"
 MAX_TOKENS = 4096
 
@@ -122,11 +122,8 @@ class Llama3CLI:
 
 
 class RoundedButton(tk.Canvas):
-    def __init__(self, parent, text, command=None, font=None,
-                 bg="#a7d7c5", fg="#2e2e2e", hover_bg="#c5e1d8",
-                 width=140, height=50, radius=20):
-        super().__init__(parent, width=width, height=height,
-                         highlightthickness=0, bg=parent['bg'])
+    def __init__(self, parent, text, command=None, font=None, bg="#a7d7c5", fg="#2e2e2e", hover_bg="#c5e1d8", width=140, height=50, radius=20):
+        super().__init__(parent, width=width, height=height, highlightthickness=0, bg=parent['bg'])
         self.command = command
         self.bg = bg
         self.fg = fg
@@ -141,7 +138,6 @@ class RoundedButton(tk.Canvas):
 
         self.text = text
 
-        # Dibujar botón
         self._draw_button(self.bg)
 
         # Enlazar eventos SOLO a los elementos internos
@@ -174,16 +170,9 @@ class RoundedButton(tk.Canvas):
             bw, bw
         ]
 
-        self.round_rect = self.create_polygon(
-            points, smooth=True, splinesteps=36,
-            fill=fill_color, outline=self.border_color,
-            width=bw, tags="button_shape"
-        )
+        self.round_rect = self.create_polygon(points, smooth=True, splinesteps=36, fill=fill_color, outline=self.border_color, width=bw, tags="button_shape")
 
-        self.text_id = self.create_text(
-            w // 2, h // 2, text=self.text, fill=self.fg,
-            font=self.font, tags="button_text"
-        )
+        self.text_id = self.create_text(w // 2, h // 2, text=self.text, fill=self.fg, font=self.font, tags="button_text")
 
     def on_enter(self, event):
         self.itemconfig(self.round_rect, fill=self.hover_bg)
@@ -227,16 +216,13 @@ class Llama3GUI:
         main_frame = tk.Frame(center_frame, bg=bg_color, padx=10, pady=10)
         main_frame.pack(fill="both", expand=True)
 
-        label_title = tk.Label(main_frame, text="Asistente con Generación Aumentada por Recuperación - Llama 3.2",
-                               font=("Inter", 18, "bold"), bg=bg_color, fg=text_color)
+        label_title = tk.Label(main_frame, text="Asistente con Generación Aumentada por Recuperación - Llama 3.2", font=("Inter", 18, "bold"), bg=bg_color, fg=text_color)
         label_title.pack(pady=(0, 10))
 
-        label_input = tk.Label(main_frame, text=" Pregunta:", font=("Segoe UI", 12, "italic"),
-                               bg=bg_color, fg=text_color)
+        label_input = tk.Label(main_frame, text=" Pregunta:", font=("Segoe UI", 12, "italic"), bg=bg_color, fg=text_color)
         label_input.pack(anchor="w")
 
-        self.input_text = tk.Text(main_frame, height=3, font=('Segoe UI', 10), wrap=tk.WORD,
-                                  bg="white", fg=text_color, insertbackground=text_color)
+        self.input_text = tk.Text(main_frame, height=3, font=('Segoe UI', 10), wrap=tk.WORD, bg="white", fg=text_color, insertbackground=text_color)
         self.input_text.pack(fill="x", pady=(5, 10))
 
         btn_frame = tk.Frame(main_frame, bg=bg_color)
@@ -246,34 +232,21 @@ class Llama3GUI:
         send_frame.pack(side="left", expand=True)
 
         # Botón Enviar centrado a la izquierda
-        self.send_button = RoundedButton(send_frame, "Enviar", command=self.send_question,
-                                         bg=button_color_1, fg=text_color, hover_bg=button_hover_1,
-                                         width=140, height=60, radius=15,
-                                         font=("Segoe UI", 14, "bold"))
+        self.send_button = RoundedButton(send_frame, "Enviar", command=self.send_question, bg=button_color_1, fg=text_color, hover_bg=button_hover_1, width=140, height=60, radius=15, font=("Segoe UI", 14, "bold"))
         self.send_button.pack()
 
-        label_output = tk.Label(main_frame, text=" Historial de la conversación:", font=("Segoe UI", 12, "italic"),
-                                bg=bg_color, fg=text_color)
+        label_output = tk.Label(main_frame, text=" Historial de la conversación:", font=("Segoe UI", 12, "italic"), bg=bg_color, fg=text_color)
         label_output.pack(anchor="w")
 
-        self.chat_text = scrolledtext.ScrolledText(main_frame, height=20, font=('Segoe UI', 10), wrap=tk.WORD,
-                                                   state="disabled", bg="white", fg=text_color,
-                                                   insertbackground=text_color)
+        self.chat_text = scrolledtext.ScrolledText(main_frame, height=20, font=('Segoe UI', 10), wrap=tk.WORD, state="disabled", bg="white", fg=text_color, insertbackground=text_color)
         self.chat_text.pack(fill="both", expand=True, pady=(5, 10))
 
-        # NUEVO FRAME DE BOTONES DEBAJO DE LA CONVERSACIÓN
         bottom_button_frame = tk.Frame(main_frame, bg=bg_color)
         bottom_button_frame.pack(pady=(0, 10))
 
-        self.clear_button = RoundedButton(bottom_button_frame, "Reiniciar conversación", command=self.clear_chat,
-                                          bg=button_color_2, fg=text_color, hover_bg=button_hover_2,
-                                          width=200, height=45, radius=15,
-                                          font=("Segoe UI", 12, "bold"))
+        self.clear_button = RoundedButton(bottom_button_frame, "Reiniciar conversación", command=self.clear_chat, bg=button_color_2, fg=text_color, hover_bg=button_hover_2, width=200, height=45, radius=15, font=("Segoe UI", 12, "bold"))
 
-        self.save_button = RoundedButton(bottom_button_frame, "Guardar conversación", command=self.save_conversation,
-                                         bg=button_color_3, fg=text_color, hover_bg=button_hover_3,
-                                         width=200, height=45, radius=15,
-                                         font=("Segoe UI", 12, "bold"))
+        self.save_button = RoundedButton(bottom_button_frame, "Guardar conversación", command=self.save_conversation, bg=button_color_3, fg=text_color, hover_bg=button_hover_3, width=200, height=45, radius=15, font=("Segoe UI", 12, "bold"))
 
         self.clear_button.pack(side="left", padx=50)
         self.save_button.pack(padx=50, side="left")
@@ -359,6 +332,10 @@ class Llama3GUI:
         self.chat_text.delete("1.0", tk.END)
         self.chat_text.config(state="disabled")
         self.conversation_log.clear()
+
+        # se reinicia la 'id' de sesión del cliente para que se genere una conversación de cero
+        self.client.session_id = "0"
+
 
     def send_question(self):
         if self.is_processing:
