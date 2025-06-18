@@ -1,7 +1,7 @@
 import time
 import hashlib
 import numpy as np
-from ..llama32 import Llama3
+from Llama32 import Llama3
 from ..__special__ import logging, __keys_path__
 from flask import Flask, request, jsonify
 

@@ -44,7 +44,7 @@ import re  # manejar expresiones regulares para formatear el texto de la respues
 import threading  # manejar tareas simultáneamente
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
-SERVER_IP = "192.168.XX.XX"
+SERVER_IP = "192.168.79.82"
 API_KEY = "<MASTERKEY>"
 VECTOR_DB_PATH = "./vector_db"
 MAX_TOKENS = 4096

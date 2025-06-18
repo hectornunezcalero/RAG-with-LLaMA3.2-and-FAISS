@@ -8,8 +8,7 @@
 #       Trabajo de Fin de Grado:                                        #
 #           Sistema de Generación Aumentada por Recuperación (RAG)      #
 #           con LLaMA 3.2 como asistente para consultas                 #
-#           sobre artículos farmacéuticos que dispone el                #
-#           grupo de investigación de la Universidad de Alcalá.         #
+#           sobre documentos PDF                                        #
 #                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #

@@ -24,4 +24,5 @@ googletrans                       # usado por el cliente para traducir texto de 
 # time                            # usado por el server para medir tiempos o controlar pausas en la ejecución
 # hashlib                         # usado por el server para generar hashes, usándolos como identificadores o para comprobar la integridad
 # asyncio                         # usado por el cliente para manejar operaciones asíncronas (necesario para la traducción en nuestro caso)
-# import datetime                 #  manejar fechas y horas
+# datetime                        # usado por el cliente para manejar fechas y horas
+# threading                       # usado por el cliente para manejar operaciones en segundo plano
