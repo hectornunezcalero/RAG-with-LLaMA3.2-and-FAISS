@@ -3,15 +3,11 @@ venv/
 
 # las cachés de Python
 __pycache__/
-*.pyc
 
 # información del proyecto "no relevante"
 .idea
 
-# directorios
-Samples/
-
-# documentación pdf, txt y Database
+# documentación pdf, txt y database
 pdfdata/*
 !pdfdata/.gitkeep
 
