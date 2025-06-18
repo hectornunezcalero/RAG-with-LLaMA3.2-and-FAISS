@@ -15,6 +15,7 @@ accelerate                        # usado por el servidor para optimizar la carg
 python-dotenv                     # usado por el servidor para cargar variables de entorno desde un archivo .env, facilitando la configuración del entorno de ejecución
 googletrans                       # usado por el cliente para traducir texto de español a inglés
 
+
 # ya incluidos por python:
 
 # os                              # usado por data_extractor y vectorizer para manejar rutas, directorios, archivos y operaciones del sistema de ficheros
