@@ -1,51 +1,22 @@
-# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
-#                                                                       #
-#       Universidad de Alcalá - Escuela Politécnica Superior            #
-#                                                                       #
-#       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
-#                                                                       #
-#                                                                       #
-#       Trabajo de Fin de Grado:                                        #
-#           Sistema de Generación Aumentada por Recuperación (RAG)      #
-#           con LLaMA 3.2 como asistente para consultas                 #
-#           sobre documentos PDF                                        #
-#                                                                       #
-#                                                                       #
-#       Autor: Héctor Núñez Calero                                      #
-#       Cotutor: Alberto Palomo Alonso                                  #
-#       Tutor: Jorge Pérez Aracil                                       #
-#                                                                       #
-# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
-#                                                                       #
-#       Script: client_local4.py                                        #
-#       Funciones principales:                                          #
-#        1. Prestar la GUI con Tkinter para interactuar con LLaMa 3.2   #
-#           a modo de pregunta-respuesta                                #
-#        2. Buscar documentos relacionados en la base de datos FAISS    #
-#        3. Enviar consultas al servidor que dispone del LLM            #
-#        4. Visualizar y poder guardar las preguntas y respuestas       #
-#                                                                       #
-# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
-
 from transformers import AutoTokenizer  # cargar el tokenizador del modelo de embeddings de Hugging Face
 from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinada para las búsquedas por similitud
 from langchain_huggingface import HuggingFaceEmbeddings  # usar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
 import faiss  # crear y consultar la base de datos vectorial FAISS (versión CPU)
-import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
+import pickle  # guardar y cargar los objetos serializados (por ejemplo, los índices)
+import requests  # hacer peticiones al servidor Flask con el modelo
 import logging  # controlar y personalizar la salida de mensajes, avisos y errores
 import tkinter as tk  # crear la interfaz gráfica de usuario (GUI)
-from tkinter import scrolledtext, filedialog, messagebox  # crear cajas de texto, personalización de archivos y widgets
+from tkinter import scrolledtext, filedialog, messagebox  # crear widgets, cajas de texto y diálogos de archivos
+from googletrans import Translator  # traducir el texto de la pregunta al inglés para el modelo Llama3.2
+import asyncio  # manejar corutinas
 from datetime import datetime  #  manejar fechas y horas
-import re  # limpiar y procesar texto mediante expresiones regulares
+import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
+import re  # manejar expresiones regulares para formatear el texto de la respuesta
 import threading  # manejar tareas simultáneamente
-import pickle  # guardar o cargar los objetos serializados (por ejemplo, los índices)
-import requests  # hacer peticiones al servidor Flask que dispone del LLM
-from googletrans import Translator  # traducir el texto de la pregunta siempre al inglés para una mejor interactividad con el modelo Llama3.2
-import asyncio  # manejar la ejecución de código asíncrono, en este caso para la traducción
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
-SERVER_IP = "192.168.XX.XX"
-API_KEY = "7f6e5d4c3b2a1098f7e6d5c4b"
+SERVER_IP = "192.168.79.82"
+API_KEY = "<MASTERKEY>"
 VECTOR_DB_PATH = "./vector_db"
 MAX_TOKENS = 4096
 

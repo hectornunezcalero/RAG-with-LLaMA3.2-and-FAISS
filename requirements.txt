@@ -2,18 +2,17 @@
 
 flask                             # usado por el servidor para proporcionar la API REST al cliente
 faiss-cpu                         # usado por el vectorizer para crear y consultar la base de datos vectorial FAISS (versión CPU)
-langchain                         # usado por el vectorizer y cliente para la estructura langchain base para las siguientes funciones
+langchain                         # usado por el vectorizer y cliente para usar la estructura langchain base para las siguientes funciones
 langchain-community               # usado por el vectorizer y cliente para cargar módulos comunitarios como FAISS y el docstore
 langchain-huggingface             # usado por el vectorizer y cliente para generar y usar embeddings con el modelo de Hugging Face
-transformers                      # usado por el vectorizer para cargar el tokenizador del modelo de embeddings
+transformers                      # usado por el vectorizer para cargar el tokenizador del modelo de embeddings de Hugging Face
 sentence-transformers             # usado internamente por langchain-huggingface para cargar modelos de embeddings basados en Sentence Transformers
 torch                             # backend PyTorch usado por cliente y vectorizer para ejecutar modelos de embeddings (no se importa explícitamente)
 numpy                             # usado por el servidor para manejo numérico que conlleve arrays
 PyMuPDF                           # (fitz) usado por el data_extractor para extraer texto de archivos PDF
-requests                          # usado por el cliente para hacer peticiones al servidor Flask con el modelo
+requests                          # usado por el cliente para hacer peticiones al servidor Flask que dispone del LLM
 accelerate                        # usado por el servidor para optimizar la carga y ejecución de modelos de Hugging Face
-python-dotenv                     # usado por el servidor para cargar variables de entorno desde un archivo .env, facilitando la configuración del entorno de ejecución
-googletrans                       # usado por el cliente para traducir texto de español a inglés
+googletrans                       # usado por el cliente para traducir el texto de la pregunta siempre al inglés para una mejor interactividad con el modelo Llama3.2
 
 
 # ya incluidos por python:
@@ -24,6 +23,7 @@ googletrans                       # usado por el cliente para traducir texto de 
 # pickle                          # usado por el cliente para guardar y cargar los objetos serializados (por ejemplo, los índices)
 # time                            # usado por el server para medir tiempos o controlar pausas en la ejecución
 # hashlib                         # usado por el server para generar hashes, usándolos como identificadores o para comprobar la integridad
-# asyncio                         # usado por el cliente para manejar operaciones asíncronas (necesario para la traducción en nuestro caso)
+# asyncio                         # usado por el cliente para manejar la ejecución de código asíncrono, en este caso para la traducción
 # datetime                        # usado por el cliente para manejar fechas y horas
 # threading                       # usado por el cliente para manejar operaciones en segundo plano
+# tkinter                         # usado por el cliente para crear y tratar con la interfaz gráfica de usuario (GUI)

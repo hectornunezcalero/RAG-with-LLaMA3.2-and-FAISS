@@ -57,13 +57,8 @@ class Llama3Server:
         self.llama.set_task(data_task)
         self.llama.pooling = data_pooling
 
-        """ antes
+        # si se especifica un nuevo prompt, es porque se trata de una conversación nueva
         if new_prompt:
-            self.llama.set_prompt(new_prompt)
-        """
-
-        # si la sesión es nueva o no hay mensajes previos, se establece el nuevo prompt:
-        if session == '0' or not self.llama.messages:
             self.llama.set_prompt(new_prompt)
 
         try:

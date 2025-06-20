@@ -59,18 +59,14 @@ class Llama3Server:
         if session not in self.sessions:
             self.sessions[session] = Llama3()
 
+        # establecer la tarea y el pooling de la instancia de Llama3:
         llama_instance = self.sessions[session]
         llama_instance.set_task(data_task)
         llama_instance.pooling = data_pooling
 
-        """ antes
+        # si se especifica un nuevo prompt, es porque se trata de una conversación nueva
         if new_prompt:
             self.llama.set_prompt(new_prompt)
-        """
-
-        # si la sesión es nueva o no hay mensajes previos, se establece el nuevo prompt:
-        if session == '0' or not llama_instance.messages:
-            llama_instance.set_prompt(new_prompt)
 
         try:
             # procesar el contenido y obtener la respuesta de cada instancia de Llama3:
