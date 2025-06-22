@@ -27,7 +27,7 @@ Este repositorio contiene un sistema completo para la integración local de un m
 Antes de comenzar, asegúrese de cumplir con lo siguiente:
 
 - Sistema operativo: **Windows 10/11** (con soporte para Python).
-- **Python 3.10 o 3.11** instalado y añadido al PATH.
+- **Python 3.10 o 3.11** instalado y **añadido al PATH**.
 - Tener `pip` actualizado:  
   ```bash
   python -m pip install --upgrade pip
