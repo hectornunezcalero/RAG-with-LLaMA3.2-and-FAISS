@@ -39,7 +39,7 @@ Antes de comenzar, asegúrese de cumplir con lo siguiente:
 
 ## 📦 `requirements.txt`
 
-El archivo incluye dependencias esenciales como:
+Se necesitan las siguientes dependencias externas a python:
 
 ```txt
 flask                        
