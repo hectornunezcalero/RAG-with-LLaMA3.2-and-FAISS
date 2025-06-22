@@ -131,7 +131,7 @@ Este programa utiliza la base de datos FAISS construida anteriormente para reali
 
 ---
 
-## 🧠 Resumen del funcionamiento de este sistema RAG
+## 🎁 Resumen del funcionamiento de este sistema RAG
 
 1. **Extracción**: El texto se extrae de PDFs y se limpia.
 2. **Vectorización**: Se genera una base de vectores semánticos del texto.
