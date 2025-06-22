@@ -40,7 +40,6 @@ DATABASE_PATH = ".\\vector_db"
 CHUNK_LEN = 180
 OVERLAP = 30
 
-
 # se silencia el warning que cree que no se va a chunkear y se va a exceder el límite de tokens
 logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
 
