@@ -42,8 +42,6 @@ import pickle  # guardar o cargar los objetos serializados (por ejemplo, los ín
 import requests  # hacer peticiones al servidor Flask que dispone del LLM
 from googletrans import Translator  # traducir el texto de la pregunta siempre al inglés para una mejor interactividad con el modelo Llama3.2
 import asyncio  # manejar la ejecución de código asíncrono, en este caso para la traducción
-from langdetect import detect  # detectar el idioma de la pregunta del usuario, para corregirla y traducirla si es necesario
-import language_tool_python  # corregir la gramática y ortografía de la pregunta del usuario, si es necesario
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "192.168.XX.XX"
@@ -107,7 +105,7 @@ class Llama32CLI:
         docs = self.last_docs
 
         # se prepara el cuerpo de la petición al servidor (pooling y task controladas por la instancia Llama3.2)
-        # el contenido será la query, los tokens máximos serán 4096 y el prompt el creado anteriormente
+        # el contenido será la query, los tokens máximos de respuesta serán 4096 y el prompt el creado anteriormente
         data = {
             "content": [question],
             "max_tokens": MAX_TOKENS,

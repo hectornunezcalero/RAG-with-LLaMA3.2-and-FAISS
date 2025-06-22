@@ -6,8 +6,7 @@ __pycache__/
 
 # información del proyecto "no relevante"
 .idea
-./uah_client.py
-./uah_server.py
+/uah*
 
 # documentación pdf, txt y database
 pdfdata/*
