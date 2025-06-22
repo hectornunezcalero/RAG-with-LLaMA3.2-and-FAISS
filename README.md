@@ -14,8 +14,8 @@ Este repositorio contiene un sistema completo para la integración local de un m
 ├── txtdata/                 # Carpeta con texto plano (postprocesado)
 ├── data_extractor.py        # Extracción de texto desde PDF a TXT
 ├── vectorizer.py            # Vectorización, embeddings y base de datos FAISS
-├── llama_server_local.py    # Servidor Flask que aloja LLaMA 3.2 y gestiona generación de texto
-├── llama_client_local.py    # Cliente para consultas y sesiones (Tkinter + requests)
+├── local_client.py          # Cliente con GUI para consultas al servidor
+├── local_server.py          # Servidor Flask que aloja la instancia LLaMA 3.2 como LLM para las respuestas
 ├── vector_db/               # Base de datos vectorial generada con FAISS
 └── README.md                # Archivo README del proyecto
 ```
@@ -54,7 +54,6 @@ numpy
 PyMuPDF                         
 requests                        
 accelerate                      
-python-dotenv
 googletrans
 ```
 
@@ -97,90 +96,53 @@ En primer lugar, se extrae el texto de los archivos PDF del directorio pdfdata y
 python data_extractor.py
 ```
 
-En segundo lugar, se divide los textos en chunks, genera vectores para cada chunk utilizando un modelo de embeddings y almacena los vectores en una base de datos FAISS.
+En segundo lugar, se divide los textos en chunks, genera vectores para cada chunk utilizando un modelo de embeddings y almacena los vectores en una base de datos vectorial (FAISS).
 
 ```bash
 python vectorizer.py
 ```
 
-Esto gestionará `txtdata/` contruyendo los objetos 'document', vectores e índice en `vector_db/`.
+Esto gestionará `txtdata/`, construyendo los objetos 'document', los vectores semánticos y los índices document-vector en `vector_db/`.
 
 ---
 
-### 2. Levantar el servidor Flask con LLaMA
+### 2. Levantar el servidor Flask con LLaMA 3.2
 
-Abra una terminal nueva:
+Se ejecuta el servidor Flask para responder a las consultas del cliente.
 
 ```bash
 python llama_server_local.py
 ```
 
-Esto iniciará el backend en `http://127.0.0.1:5666/`, que espera consultas del cliente y responde con texto generado por el modelo LLaMA 3.2.
+Esto iniciará el backend en `http://192.168.XX.XX:5666/`, que espera consultas del cliente para responder con texto generado por el modelo de LLM: LLaMA 3.2 3B.
 
 ---
 
 ### 3. Ejecutar la interfaz gráfica del cliente
 
-En otra terminal (manteniendo el servidor encendido):
+Manteniendo el servidor encendido, se ejecuta el script cliente:
 
 ```bash
 python llama_client_local.py
 ```
 
 Se abrirá una ventana gráfica que permite introducir preguntas. El sistema recuperará contexto relevante y generará respuestas usando el modelo.
-Utilice la base de datos FAISS construida anteriormente para realizar recuperación de contexto a la hora de enviar el prompt con la query. 
+Este programa utiliza la base de datos FAISS construida anteriormente para realizar recuperación de contexto a la hora de enviar el prompt para contestar las queries. 
 
 ---
 
-## 📥 Cómo se obtiene el acceso a LLaMA 3.2
-
-1. Acceda a la página oficial del modelo en Hugging Face:  
-    [https://huggingface.co/meta-llama](https://huggingface.co/meta-llama)
-
-2. Rellene el formulario de solicitud de Meta:
-   - Use un email institucional si es posible.
-   - Describa tu propósito (por ejemplo, "TFG sobre búsqueda con IA usando RAG").
-   - Acepte los términos de licencia.
-
-3. Una vez aprobado, se descargará con `transformers`:
-
-```python
-from transformers import AutoTokenizer, AutoModelForCausalLM
-
-
-tokenizer = AutoTokenizer.from_pretrained(MODEL_LOCAL_PATH)
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_LOCAL_PATH,
-    device_map={"auto"},
-    torch_dtype=torch.float16,
-    low_cpu_mem_usage=True,
-    trust_remote_code=True,
-)
-```
-
----
----
-
-## 🧠 Funcionamiento resumido del sistema RAG
+## 🧠 Resumen del funcionamiento de este sistema RAG
 
 1. **Extracción**: El texto se extrae de PDFs y se limpia.
-2. **Vectorización**: Se genera una base de vectores (embeddings) del texto.
+2. **Vectorización**: Se genera una base de vectores semánticos del texto.
 3. **Recuperación**: Ante una consulta, se buscan los vectores más cercanos en FAISS.
-4. **Generación**: Se construye un prompt con el contexto recuperado y se genera una respuesta utilizando el modelo LLaMA 3.2.
-
----
-
-## 🔐 Notas importantes
-
-- Asegúrese de tener suficiente memoria (RAM/GPU) para LLaMA 3.2. Para CPU, puede ser más lento.
-- Toda la información sensible (claves, rutas a modelos) debe mantenerse fuera del código fuente público.
-- Este sistema es para **uso académico o personal**. El uso comercial requiere autorización explícita de Meta AI.
+4. **Generación**: Se construye un prompt con el contexto recuperado, se solicita la consulta y se genera una respuesta utilizando el modelo LLaMA 3.2.
 
 ---
 
 ## 🤝 Justificación del proyecto
 
-Este proyecto forma parte de un **Trabajo de Fin de Grado (TFG)** en Ingeniería Telemática – Universidad de Alcalá.  
+Este proyecto es aprovechado para un **Trabajo de Fin de Grado (TFG)** en Ingeniería Telemática – Universidad de Alcalá.  
 
 ---
 

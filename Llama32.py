@@ -28,175 +28,85 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
+import torch  # manejar el modelo en GPU o CPU
+from transformers import pipeline, AutoTokenizer  # cargar el pipeline y tokenizador del modelo de embeddings de Hugging Face
+import logging  # controlar y personalizar la salida de mensajes, avisos y errores
 
-import numpy as np
-import torch
-from transformers import pipeline, AutoTokenizer
-import logging
+# se establece el número máximo de mensajes que se pueden manejar en una conversación (1 prompt + 10 preguntas + 10 respuestas)
+MAX_MESSAGES = 21
 
+# se establece la ruta del modelo Llama3.2
 __llama_path__ = "./model"
 
 
-# Main class:
+# Clase del modelo Llama3.2 que maneja las tareas de NLP
 class Llama3:
-    def __init__(self, max_tokens: int = 1024, pooling: str = 'none', task: str = 'generation', gpu: bool = True):
-        """
-        Llama3 model for different tasks.
-        :param max_tokens: The maximum number of tokens.
-        :param pooling: The pooling method for the non-text-generation tasks.
-        :param task: The task.
-        :param gpu: Use GPU.
-        """
-        self._task_map = {
-            'generation': ('text-generation', self.text_generation_task, True),
-            'feature_extraction': ('feature-extraction', self.feature_extraction_task, True),
-            'classification': ('text-classification', self.not_implemented_task, False),
-            'zero_shot_classification': ('zero-shot-classification', self.not_implemented_task, False),
-            'sentiment_analysis': ('sentiment-analysis', self.not_implemented_task, False)
-        }
-        available_pooling = ['none', 'mean', 'max', 'min', 'sum']
-        pooling = pooling.lower()
-
-        # Ops checking:
-        if pooling not in available_pooling:
-            raise ValueError(f'Pooling must be one of {available_pooling}')
-
-        if not isinstance(max_tokens, int):
-            raise ValueError(f'Tokens must be an integer.')
-
-        if max_tokens < 1:
-            raise ValueError(f'Tokens must be greater than 0.')
-
-        # Initialize:
+    def __init__(self, max_tokens: int = 4096, pooling: str = 'none', gpu: bool = True):
+        # se inicializan los atributos del modelo:
         self.pipe = None
         self.tokenizer = None
-        self.task = None
+        self.task = 'generation'
         self.messages: list = list()
         self.prompt: dict = {}
-        self.max_tokens: int = max_tokens
+        self.max_tokens = max_tokens
         self.pooling = pooling
         self.gpu = gpu
 
-        # Set up the prompt:
-        self.set_task(task)
-        self.set_prompt('You are an useful assistant.')
-        logging.info(f'[+] Llama3.2 model initialized with task {task}.')
+        # se prepara el pipeline del modelo Llama3.2
+        self._init_pipeline()
 
-    @property
-    def tasks(self) -> list:
-        """
-        This function returns the task.
-        :return: The task.
-        """
-        return list(self._task_map.keys())
-
-    def set_task(self, task: str) -> None:
-        """
-        This function sets the task.
-        :param task: The task.
-        """
-        task = task.lower()
-
-        if task not in self._task_map:
-            raise ValueError(f'Task must be one of {self._task_map.keys()}')
-
-        self.task = task
-        # Get tokenizer:
+    # Establecer el pipeline del modelo
+    def _init_pipeline(self):
         self.tokenizer = AutoTokenizer.from_pretrained(__llama_path__)
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        # Free the GPU memory for new pipe:
-        del self.pipe
+        # el nuevo pipeline se crea con el modelo y el tokenizador adecuados
         self.pipe = pipeline(
-            self._task_map[task][0],
+            "text-generation",
             tokenizer=self.tokenizer,
-            model = __llama_path__,
-            torch_dtype = torch.bfloat16,
-            device_map = 0 if self.gpu else 'cpu',
+            model=__llama_path__,
+            torch_dtype=torch.bfloat16,
+            device_map=0 if self.gpu else 'cpu',
         )
-        logging.info(f'[i] Task set to {task}.')
+        logging.info("Modelo Llama3.2 cargado para generación de texto.")
 
+
+    # Establecer el prompt inicial del modelo para comenzar una conversación
     def set_prompt(self, prompt: str):
-        """
-        This function sets the prompt and resets the messages.
-        :param prompt: The prompt.
-        """
+        # el rol de esta transacción es "system" y el contenido el prompt
         self.prompt = {'role': 'system', 'content': prompt}
+
+        # se inicializa la lista de mensajes con el prompt como primer mensaje
         self.messages = [self.prompt]
-        logging.info(f'[i] Prompt set to <{prompt}>')
+        logging.info(f'Prompt establecido: {prompt}')
 
-    def text_generation_task(self, text: list[str], max_tokens: int = None):
-        """
-        This function generates text.
-        :param text: The current text.
-        :param max_tokens: The maximum number of tokens.
-        :return: The generated text.
-        """
+
+    # Gestionar la consulta recibida, para que el modelo pueda responderla
+    def text_generation_task(self, text: list[str], max_tokens):
+        # el rol de esta transacción es "user" y el contenido la pregunta recibida
         self.messages.append({'role': 'user', 'content': text})
-        self.messages = self.pipe(self.messages, max_length = max_tokens)[0]['generated_text']
-        return self.messages[-1]
 
-    def feature_extraction_task(self, text: list[str], max_tokens: int = None):
-        """
-        This function extracts the features.
-        :param text: The current text.
-        :param max_tokens: The maximum number of tokens.
-        :return: The extracted features.
-        """
-        embeddings = list()
-        responses = self.pipe(text, max_length=max_tokens, padding=True)
-        for response in responses:
-            array_response = np.squeeze(np.array(response))
-            # Apply pooling:
-            if self.pooling == 'mean':
-                embeddings.append(np.mean(array_response, axis = 0))
-            elif self.pooling == 'max':
-                embeddings.append(np.max(array_response, axis = 0))
-            elif self.pooling == 'min':
-                embeddings.append(np.min(array_response, axis = 0))
-            elif self.pooling == 'sum':
-                embeddings.append(np.sum(array_response, axis = 0))
-            else:
-                embeddings.append(array_response)
-        return embeddings
+        # si el modelo ya tiene mensajes, para no perder funcionamiento,
+        # se eliminan mensajes menos el prompt y los últimos mensajes pregunta-respuesta
+        if len(self.messages) > MAX_MESSAGES:
+            self.messages = [self.prompt] + self.messages[-(MAX_MESSAGES - 1):]
 
-    def not_implemented_task(self, text: list[str], max_tokens: int = None):
-        """
-        This function is called when the task is not implemented.
-        :param text: The current text.
-        :param max_tokens: The maximum number of tokens.
-        :return: The output.
-        """
-        raise NotImplementedError(f'Task {self.task} is not implemented yet.')
+        # se genera la respuesta del modelo sobre la pregunta recibida
+        response = self.pipe(messages=self.messages, max_new_tokens=max_tokens)[0]
+        generated_text = response["generated_text"].strip()
+
+        # se añade el mensaje de la respuesta del modelo a la lista de mensajes y se devuelve dicha respuesta
+        self.messages.append({'role': 'assistant', 'content': generated_text})
+        return generated_text
 
 
+    # Permitir que la instancia Llama3 se use como función en el servidor
     def __call__(self, *args, **kwargs):
-        """
-        This function is called when the object is called.
-        :param args: An iterable with texts to be processed.
-        :param kwargs: The keyword arguments.
-        :return: The output of the model.
-        """
-        # Check if kwargs has 'tokens':
-        max_tokens = self.max_tokens
-        if 'tokens' in kwargs:
-            # Compute the pipe:
-            max_tokens = kwargs['tokens']
-            # Check if the tokens are correct:
-            if not isinstance(max_tokens, int):
-                raise ValueError(f'Tokens must be an integer.')
-            # Check if the tokens are in the correct range:
-            if max_tokens < 1:
-                raise ValueError(f'Tokens must be greater than 0.')
+        # se obtiene el número máximo de tokens de los argumentos
+        max_tokens = kwargs.get("tokens", self.max_tokens)
+        # se llama directamente a la tarea de generación de texto con los argumentos recibidos
+        return self.text_generation_task(list(args), max_tokens)
 
-        # Compute the pipe for the given task:
-        if self._task_map[self.task][2]:
-            task_result = self._task_map[self.task][1](list(args), max_tokens = max_tokens)
-        else:
-            task_result = self._task_map[self.task][1](list(args))
-        logging.info(f'[i] Task {self.task} executed with {len(args)} texts.')
-        return task_result
-
-
+    # Devolver una representación legible de la instancia Llama3
     def __repr__(self):
-        return f'<Llama3.2(task={self._task_map[self.task][0]}, max_tokens={self.max_tokens})>'
+        return f'<Llama3.2: (tarea={self.task}, max_tokens={self.max_tokens})>'

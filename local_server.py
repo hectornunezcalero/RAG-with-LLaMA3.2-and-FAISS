@@ -1,68 +1,86 @@
-import time
-import hashlib
-import numpy as np
-from Llama32 import Llama3
-import logging
-from flask import Flask, request, jsonify
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#       Universidad de Alcalá - Escuela Politécnica Superior            #
+#                                                                       #
+#       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
+#                                                                       #
+#                                                                       #
+#       Trabajo de Fin de Grado:                                        #
+#           Sistema de Generación Aumentada por Recuperación (RAG)      #
+#           con LLaMA 3.2 como LLM para consultas                       #
+#           sobre documentos o artículos en PDF                         #
+#                                                                       #
+#                                                                       #
+#       Autor: Héctor Núñez Calero                                      #
+#       Cotutor: Alberto Palomo Alonso                                  #
+#       Tutor: Jorge Pérez Aracil                                       #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#       Script: local_server.py                                         #
+#       Funciones principales:                                          #
+#        1. Recibir la request del cliente con sus cabeceras y datos    #
+#        2. Validad la clave API para autenticar y autorizar al cliente #
+#        3. Enviar al LLM Llama3.2 la pregunta contextualizada para     #
+#           que devuelva la respuesta a la pregunta, controlando si     #
+#           es una nueva sesión o es una ya empezada                    #
+#        4. Devolver la respuesta correspondiente al cliente            #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+
+import time  # usar 'time' para generar hashes sesiones únicas
+import hashlib  # generar un hash único de la sesión
+import numpy as np  # manejar datos de respuesta
+from Llama32 import Llama3  # importar la clase Llama3 que dispone del LLM
+import logging  # controlar y personalizar la salida de mensajes, avisos y errores
+from flask import Flask, request, jsonify  # conseguir una API RESTful que permita la comunicación con el modelo
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
+SRV_IP = '192.168.XX.XX'
 
-__keys_path__ = "keys_path.txt"  # Path to the API keys file
+# se establece el archivo de texto con la clave de acceso a la API
+__keys_path__ = "keys_path.txt"
 
 
-# Server side:
+# Clase para el servidor que maneja las peticiones y el LLM
 class Llama3Server:
-    def __init__(self, host='192.168.XX.XX', port=LLAMA_PORT):
-        """
-        This class is a server for the Llama3.2 API.
-        :param host: The IP to host the service.
-        :param port: The port to host the service.
-        """
-        logging.info('[+] Llama3.2-Server initialized.')
+    def __init__(self, host = SRV_IP, port = LLAMA_PORT):
+        # se despliega el servidor y el modelo Llama3.2
+        logging.info('Servidor con Llama3.2 inicializado.')
         self.app = Flask(__name__)
         self.llama = Llama3()
-        # Inline declaration:
         self.app.route('/request', methods=['POST'])(self.query)
-        # Run the server:
         self.app.run(host, port)
 
+    # Procesar la consulta recibida
     def query(self):
-        """
-        This function processes the query.
-        :return: The response.
-        """
+        # se recolecta de las cabeceras la clave de acceso y la sesión, además de obtenerse los datos de la consulta
         key = request.headers.get('Authorization')
         session = request.headers.get('Session')
         data = request.json
 
-        # Create a new session or recover information:
+        # si se trata de una nueva sesión, se genera un hash único para nombrarla
         if session == '0':
             session = 'si-' + hashlib.sha256(str(time.time()).encode()).hexdigest()[:20]
 
-        # Validate the key:
+        # se valida la clave de acceso del usuario
         is_valid, username = self.validate_api_key(key)
         if not is_valid:
             return jsonify({'response': 'Invalid Key', 'status_code': 401, 'query': data, 'session_id': 0})
 
-        logging.info(f'[i] Processing request from {username} with session {session}:\n{data}')
+        logging.info(f'Procesando petición de {username} con número de sesión {session}:\n{data}')
 
-        # Process the request:
-        data_pooling = data['pooling']
-        data_task = data['task']
+        # se recolectan los parámetros de los datos recibidos
         data_content = data['content']
         data_max_tokens = data['max_tokens']
-        new_prompt = data.get('new_prompt', None)
+        new_prompt = data.get('new_prompt')
 
-        # Set up llama:
-        self.llama.set_task(data_task)
-        self.llama.pooling = data_pooling
-
-        # si se especifica un nuevo prompt, es porque se trata de una conversación nueva
+        # si se especifica un nuevo prompt, es porque se trata de una conversación nueva; si no, se está continuando una conversación
         if new_prompt:
             self.llama.set_prompt(new_prompt)
 
+        # se deja al LLM que procese la consulta y genere una respuesta
         try:
-            # Process the content:
             answer = self.llama(*data_content, tokens=data_max_tokens)
             if isinstance(answer, list):
                 new_answer = list()
@@ -72,11 +90,10 @@ class Llama3Server:
                 answer = new_answer
 
         except Exception as ex:
-            logging.error(f"[!] Error: {ex}")
-            return jsonify({'response': f'Runtime Error: {ex}', 'status_code': 500,
-                            'query': data, 'session_id': session})
+            logging.error(f"Error: {ex}")
+            return jsonify({'response': f'Runtime Error: {ex}', 'status_code': 500, 'query': data, 'session_id': session})
 
-        # Prepare the response:
+        # se prepara la respuesta a enviar al cliente
         response = {
             'response': answer,
             'status_code': 200,
@@ -84,19 +101,18 @@ class Llama3Server:
             'session_id': session
         }
 
+        # finalmente, se devuelve la respuesta en formato JSON
         return jsonify(response)
 
+
+    # Comprobar la validez de la clave de acceso enviada
     @staticmethod
     def validate_api_key(key):
-        """
-        This function validates the API key.
-        :param key: The key.
-        :return: True if the key is valid, False otherwise, and the current user name.
-        """
+        # se abre el archivo de claves y se lee su contenido:
         with open(__keys_path__, 'r') as f:
             available_keys = f.read().split('\n')
 
-        # Check if the key is in the list:
+        # si la clave corresponde con alguna de las claves disponibles (clave:usuario), se devuelve True y el nombre de usuario
         for available_key_name in available_keys:
             available_key, username = available_key_name.split(':')
             if key == available_key:

@@ -7,8 +7,8 @@
 #                                                                       #
 #       Trabajo de Fin de Grado:                                        #
 #           Sistema de Generación Aumentada por Recuperación (RAG)      #
-#           con LLaMA 3.2 como asistente para consultas                 #
-#           sobre documentos PDF                                        #
+#           con LLaMA 3.2 como LLM para consultas                       #
+#           sobre documentos o artículos en PDF                         #
 #                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
@@ -17,7 +17,7 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #
-#       Script: client_local4.py                                        #
+#       Script: client_local1.py                                        #
 #       Funciones principales:                                          #
 #        1. Prestar la GUI con Tkinter para interactuar con LLaMa 3.2   #
 #           a modo de pregunta-respuesta                                #
@@ -43,9 +43,10 @@ import requests  # hacer peticiones al servidor Flask que dispone del LLM
 from googletrans import Translator  # traducir el texto de la pregunta siempre al inglés para una mejor interactividad con el modelo Llama3.2
 import asyncio  # manejar la ejecución de código asíncrono, en este caso para la traducción
 
+
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "192.168.XX.XX"
-API_KEY = "7f6e5d4c3b2a1098f7e6d5c4b"
+API_KEY = "f4d3c2b1a9876543210fedcba"
 VECTOR_DB_PATH = "./vector_db"
 MAX_TOKENS = 4096
 
@@ -87,23 +88,26 @@ class Llama32CLI:
             self.contexto = "\n\n".join(doc.page_content for doc in self.last_docs)
             contexto = self.contexto
 
-            # se utiliza un prompt predefinido para enviar al LLM, que incluye lo que debe de hacer, el contexto, la pregunta del usuario y el hueco para su respuesta
+            # se utiliza un prompt predefinido para enviar al LLM, que incluye lo que debe de hacer y el contexto
             prompt = (
-                "Eres un asistente experto en análisis de información. "
-                "Tu objetivo es entender bien la intención de la pregunta y dar una respuesta útil y coherente. "
-                "Debes responder con precisión y claridad utilizando la información proporcionada en el siguiente contexto.\n\n"
+                "Eres un asistente especializado en análisis de literatura científica y farmacéutica. "
+                "Tu función es ayudar a un equipo de investigación a extraer información útil, relevante y verificable a partir del siguiente contexto, "
+                "que procede de artículos académicos o técnicos.\n\n"
                 f"Contexto:\n{contexto}\n\n"
-                f"Pregunta:\n{question}\n\n"
-                "Respuesta:"
+                "Directrices para responder:\n"
+                "- Comprende con precisión la intención de la pregunta.\n"
+                "- Responde exclusivamente con la información contenida en el contexto proporcionado.\n"
+                "- Si la pregunta no puede responderse con los datos disponibles, indica claramente que no hay suficiente información.\n"
+                "- No inventes, asumas ni extrapoles más allá del contenido dado.\n"
+                "- Utiliza un lenguaje técnico, claro y preciso, adecuado para investigadores.\n"
+                "- Si procede, organiza la respuesta en secciones o puntos clave para mejorar su comprensión.\n"
             )
 
         docs = self.last_docs
 
-        # se prepara el cuerpo de la petición al servidor, donde el pooling ya lo realiza el modelo de embeddings (mean),
-        # la tarea será generación de texto, el contenido será la query, los tokens máximos serán 4096 y el prompt el creado anteriormente
+        # se prepara el cuerpo de la petición al servidor (pooling y task controladas por la instancia Llama3.2)
+        # el contenido será la query, los tokens máximos serán 4096 y el prompt el creado anteriormente
         data = {
-            "pooling": "none",
-            "task": "generation",
             "content": [question],
             "max_tokens": MAX_TOKENS,
             "new_prompt": prompt,
@@ -211,6 +215,7 @@ class Llama3GUI:
         self.root.bind("<Configure>", self.on_configure)
         self._last_state = self.root.state()
         self.is_processing = False
+        self.was_maximized = False
 
         bg_color = "#f0f9f4"  # verde claro
         send_button_color = "#a8d5f2"  # azul claro
@@ -291,15 +296,13 @@ class Llama3GUI:
     def on_configure(self, event):
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
-        was_maximized = getattr(self, "was_maximized", False)
         width, height = self.root.winfo_width(), self.root.winfo_height()
 
         is_now_small = width < screen_width - 50 and height < screen_height - 50
 
-        if was_maximized and is_now_small:
+        if self.was_maximized and is_now_small:
             self.fit_window_to_contents()
 
-        # se redimensiona el tamaño
         self.was_maximized = width >= screen_width - 20 and height >= screen_height - 80
 
     # Ajustar el tamaño de la ventana al contenido actual
@@ -322,9 +325,9 @@ class Llama3GUI:
         final_width = min(new_width, screen_width - 40)
         final_height = min(new_height, screen_height - 80)
 
-        # se centra la ventana
         x = (screen_width - final_width) // 2
         y = (screen_height - final_height) // 2
+
         self.root.geometry(f"{final_width}x{final_height}+{x}+{y}")
 
 
@@ -362,7 +365,7 @@ class Llama3GUI:
         # se fuerza la actualización de la interfaz para ver los mensajes antes de tareas largas
         self.root.update_idletasks()
 
-        # se crea un hilo para procesar la pregunta y devolver una respuesta por separado,
+        # se crea un hilo "ficticio" para procesar la pregunta y devolver una respuesta por separado,
         # consiguiendo así sustituir el "Pensando..." con la respuesta y no bloquear la GUI
         threading.Thread(target=self.process_question_in_thread, args=(question,)).start()
 
