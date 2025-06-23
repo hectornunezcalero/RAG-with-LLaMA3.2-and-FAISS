@@ -2,7 +2,7 @@
 #                                                                       #
 #       Universidad de Alcalá - Escuela Politécnica Superior            #
 #                                                                       #
-#       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
+#       Grado en Ingeniería Telemática - Curso 2025/2026                #
 #                                                                       #
 #                                                                       #
 #       Trabajo de Fin de Grado:                                        #
