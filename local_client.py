@@ -2,7 +2,7 @@
 #                                                                       #
 #       Universidad de Alcalá - Escuela Politécnica Superior            #
 #                                                                       #
-#       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
+#       Grado en Ingeniería Telemática - Curso 2025/2026                #
 #                                                                       #
 #                                                                       #
 #       Trabajo de Fin de Grado:                                        #
@@ -56,7 +56,7 @@ index = faiss.read_index(f"{VECTOR_DB_PATH}/index.faiss")
 with open(f"{VECTOR_DB_PATH}/index.pkl", "rb") as f:
     docstore, index_to_docstore_id = pickle.load(f)
 
-# se carga el modelo de embeddings, que con ello y lo anterior se abre la base de datos FAISS
+# se carga el modelo de embeddings, que con ello y los archivos anteriores se abre la base de datos FAISS
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L12-v2")
 faiss_db = FAISS(index=index, docstore=docstore, index_to_docstore_id=index_to_docstore_id, embedding_function=embedding_model)
 
