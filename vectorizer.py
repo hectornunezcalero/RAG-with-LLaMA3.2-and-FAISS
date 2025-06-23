@@ -22,7 +22,7 @@
 #        1. Crear/Cargar la base de datos vectorial FAISS               #
 #        2. Detectar cambios de archivos que impliquen a la bbdd        #
 #        3. Chunkear los nuevos textos para las relaciones semánticas   #
-#        4. Generar embeddings y almacenarlos en la base de datos       #
+#        4. Generar los embeddings y almacenarlos en la base de datos   #
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
