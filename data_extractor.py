@@ -28,6 +28,7 @@
 
 import fitz  # alias de PyMuPDF -> extraer texto de archivos PDF
 import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
+import shutil  # eliminar directorios
 import re  # limpiar y procesar texto mediante expresiones regulares
 
 PDF_ROOT_PATH = ".\\pdfdata"
@@ -232,6 +233,7 @@ def process_pdf(pdf_root: str, txt_root: str):
     deleted_count = 0
     extracted_count = 0
     notextracted_count = 0
+    corrected_count = 0
 
     # se recorre el directorio raíz que contiene los subdirectorios de PDFs
     print("Recorriendo directorio raíz de PDFs y comprobando versiones en texto...")
@@ -294,6 +296,16 @@ def process_pdf(pdf_root: str, txt_root: str):
                 print(f"Advertencia: {pdf_path} no tiene bloques útiles o legibles.")
                 notextracted_count += 1
 
+    # se eliminan las posibles carpetas de texto huérfanas (sin carpeta PDF correspondiente)
+    for txts_dirpath, _, _ in os.walk(txt_root, topdown=False):
+        rel_path = os.path.relpath(txts_dirpath, txt_root)
+        corresponding_pdf_dir = os.path.join(pdf_root, rel_path)
+
+        if not os.path.exists(corresponding_pdf_dir):
+            shutil.rmtree(txts_dirpath)
+            corrected_count += 1
+
+    # se muestran los resultados de la ejecución
     if deleted_count > 0:
         print(f"Se ha(n) eliminado {deleted_count} archivos de texto correspondientes a PDFs que ya no existen.")
 
@@ -302,6 +314,9 @@ def process_pdf(pdf_root: str, txt_root: str):
 
     if notextracted_count > 0:
         print(f"Total de archivos no extraídos por no contener bloques útiles o legibles: {notextracted_count}.")
+
+    if corrected_count > 0:
+        print(f"Se ha(n) eliminado {corrected_count} carpeta(s) de texto que no correspondía a ninguna carpeta des PDFs.")
 
     if extracted_count == 0 and deleted_count == 0:
         if nopdf_count > 0:
