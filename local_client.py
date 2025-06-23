@@ -67,25 +67,28 @@ class Llama32CLI:
         self.session_id = "0"
         self.last_docs = []
         self.last_sources = []
+        self.contexto = None
         self.last_timestamp = None
 
     # Procesar la solicitud del usuario
     def process_request(self, question: str):
+        docs = self.last_docs
         # si se hace una pregunta relativa a la misma sesión, se reutiliza el contexto de la primera pregunta
         prompt = None
 
-        # si se trata de una nueva sesión, se encuentran los 5 chunks más relacionados de únicamente la primera query dentro de la base de datos,
+        # si se trata de una nueva sesión, se encuentran los 6 chunks más relacionados de únicamente la primera query dentro de la base de datos,
         # devolviéndose los objetos 'Document' correspondientes del docstore.
         if self.session_id == "0":
             self.last_docs = faiss_db.similarity_search(question, k=6)
             print(f"Chunks rescatados por similitud: {len(self.last_docs)}")
             for i, doc in enumerate(self.last_docs):
-                chunk_preview = " ".join(doc.page_content.split()[:25]) + " ..."
+                chunk_preview = " ".join(doc.page_content.split()[:25]) + "..."
                 print(f" {i + 1}. {doc.metadata['source']} (chunk {doc.metadata['chunk_index']}): {chunk_preview}")
 
-            # se crea el contexto una sola vez y se almacena
+            # se crea el contexto una sola vez
             self.contexto = "\n\n".join(doc.page_content for doc in self.last_docs)
             contexto = self.contexto
+            docs = self.last_docs
 
             # se utiliza un prompt predefinido para enviar al LLM, que incluye lo que debe de hacer y el contexto
             prompt = (
@@ -95,16 +98,15 @@ class Llama32CLI:
                 f"Contexto:\n{contexto}\n\n"
                 "Directrices para responder:\n"
                 "- Comprende con precisión la intención de la pregunta.\n"
-                "- Responde exclusivamente con la información contenida en el contexto proporcionado.\n"
+                "- Responde exclusivamente con la información contenida en el contexto anteriormente proporcionado.\n"
                 "- Si la pregunta no puede responderse con los datos disponibles, indica claramente que no hay suficiente información.\n"
                 "- No inventes, asumas ni extrapoles más allá del contenido dado.\n"
                 "- Utiliza un lenguaje técnico, claro y preciso, adecuado para investigadores.\n"
                 "- Si procede, organiza la respuesta en secciones o puntos clave para mejorar su comprensión.\n"
             )
 
-        docs = self.last_docs
 
-        # se prepara el cuerpo de la petición al servidor (pooling y task controladas por la instancia Llama3.2)
+        # se prepara el cuerpo de la petición al servidor (pooling y task no necesarios, al ser una petición de generación de texto)
         # el contenido será la query, los tokens máximos de respuesta serán 4096 y el prompt el creado anteriormente
         data = {
             "content": [question],
@@ -541,9 +543,9 @@ if __name__ == "__main__":
     root = tk.Tk()
     # se establece el estado inicial de la ventana como "zoomed" para que ocupe toda la pantalla
     root.state("zoomed")
-    # se fuerza el enfoque de la ventana principal
+    # se fuerza el enfoque de esta ventana principal
     root.focus_force()
     # se inicializa la aplicación principal, pasando la ventana raíz como argumento.
     app = Llama3GUI(root)
-    # se inicia el bucle principal de la aplicación, que mantiene la ventana abierta y responde a eventos.
+    # se inicia el bucle principal de la aplicación, que mantiene la ventana abierta y responde a los eventos.
     root.mainloop()
