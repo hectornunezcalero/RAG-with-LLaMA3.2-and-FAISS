@@ -43,7 +43,7 @@ OVERLAP = 30
 # se silencia el warning que cree que no se va a chunkear y se va a exceder el límite de tokens
 logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
 
-# se carga el modelo tokenizador y vectorizador
+# se carga el modelo tokenizador y vectorizador (all-MiniLM-L12-v2 usa pooling 'mean' para la generación de los embeddings semánticos)
 tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L12-v2")
 embedding_model = HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2')
 
