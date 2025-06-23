@@ -2,7 +2,7 @@
 #                                                                       #
 #       Universidad de Alcalá - Escuela Politécnica Superior            #
 #                                                                       #
-#       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
+#       Grado en Ingeniería Telemática - Curso 2025/2026                #
 #                                                                       #
 #                                                                       #
 #       Trabajo de Fin de Grado:                                        #
@@ -21,7 +21,7 @@
 #       Funciones principales                                           #
 #        1. Extraer texto de los archivos PDF de pdfdata además de:     #
 #           1.1 Estructurarlos en una o dos columnas (o híbrido).       #
-#           1.2 Limpiarlos de espacios y contenido innecesario.         #
+#           1.2 Limpiarlos de espacios y contenidos innecesarios.       #
 #        2. Guardar el texto extraído en archivos .txt en txtdata.      #
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
@@ -49,10 +49,11 @@ def block_process(blocks):
             content = re.sub(r'\s+', ' ', content).strip()
         if content:
             parts.append(content)
+
     return "\n".join(parts)
 
 
-# Determinar si los bloques de texto están organizados en una o dos columnas
+# Determinar si los bloques de texto de una determinada zona vertical están organizados en una o dos columnas
 def is_two_column_layout(blocks, page_width):
     # se usan las posiciones horizontales de los bloques para determinar si hay dos columnas
     centers = []
@@ -77,29 +78,30 @@ def is_two_column_layout(blocks, page_width):
     left = [b for b in blocks if (b["bbox"][0] + b["bbox"][2]) / 2 < split_pos]
     right = [b for b in blocks if (b["bbox"][0] + b["bbox"][2]) / 2 >= split_pos]
 
-    # de seguido, se comprueba si ambos grupos tienen al menos un 25% de los bloques totales
+    # de seguido, se comprueba si ambos grupos tienen al menos un 20% de los bloques totales
     total = len(blocks)
     left_ratio = len(left) / total
     right_ratio = len(right) / total
     if left_ratio > 0.20 and right_ratio > 0.20:
         return left, right
-    #si no, ese bloque que ocupa menos del 20% se considera de la misma columna que el otro
+
+    #si no, ese bloque que ocupa menos del 20% se considera de la misma columna que el otro (posibles contenidos a unificar)
     else:
         return blocks, []
 
 
 # Analizar el formato de columnas dentro de una zona vertical
-def analyze_zone_layout(zone_blocks, page_width):
-    left, right = is_two_column_layout(zone_blocks, page_width)
+def analyze_zone_layout(blocks_zone, page_width):
+    left, right = is_two_column_layout(blocks_zone, page_width)
     if right:
         return True, (left, right)
     else:
-        return False, zone_blocks
+        return False, blocks_zone
 
 
-# Agrupar bloques en zonas verticales según su proximidad en Y
+# Agrupar bloques por zonas verticales según su proximidad en Y
 def cluster_blocks_vertically(blocks):
-    # se ordenan y agrupan los bloques por su posición vertical, para así agrupar bloques cercanos entre sí
+    # se ordenan y agrupan los bloques por su posición vertical superior, para así agrupar los bloques cercanos entre sí
     blocks_sorted = sorted(blocks, key=lambda b: b["bbox"][1])
     clusters = []
     current_cluster = [blocks_sorted[0]]
@@ -107,56 +109,58 @@ def cluster_blocks_vertically(blocks):
     # se establece la máxima distancia vertical entre bloques consecutivos para considerarlos parte del mismo grupo
     max_gap = 15
 
-    # se valorara la distancia entre bloques consecutivos (hueco final-comienzo entre bloques)
+    # se valora la distancia entre bloques consecutivos (hueco final-comienzo entre bloques)
     for b in blocks_sorted[1:]:
         y_top = b["bbox"][1]
+
         # si se cumple la distancia, se añade el bloque al grupo actual
         if y_top - current_max_y <= max_gap:
             current_cluster.append(b)
-            # se actualiza la posición máxima del bloque actual, por si se ha añadido un bloque más bajo
+            # se comprueba la posición vertical inferior del bloque para obtener el bloque más bajo
             current_max_y = max(current_max_y, b["bbox"][3])
-        # si no, se cierra el grupo actual y se inicia uno nuevo
+
+        # si no, se cierra el grupo actual y se inicia uno nuevo con el bloque actual
         else:
             clusters.append(current_cluster)
             current_cluster = [b]
             current_max_y = b["bbox"][3]
-    # se asegura el añadir el último grupo de bloques
+
+    # se asegura el añadir el último grupo de bloques al no haber establecido un final
     clusters.append(current_cluster)
     return clusters
 
 
-# Filtrar encabezados y pies de página (estrictamente marginados por estadística previa) de los bloques de texto
+# Filtrar encabezados y pies de página (estrictamente marginados por heurística de anclaje) de los bloques de texto
 def filter_header_footer(blocks, page_height):
     margin_top = page_height * 0.08
     margin_bot = page_height * 0.925
 
+    # encabezado: final del bloque antes del margen superior; pie: principio del bloque después del margen inferior
     not_headfoot_blocks = [b for b in blocks if not (b["bbox"][3] < margin_top or b["bbox"][1] > margin_bot)]
     return not_headfoot_blocks
 
 
-# Extraer el texto de un PDF por bloques, clasificando por tipo de bloque (texto o esquemas)
+# Extraer el texto de un PDF por bloques, clasificando por tipo de bloque (texto plano o no texto plano)
 def extract_txt(pdf_path):
     doc = fitz.open(pdf_path)
     accumulated_lines = []
 
     for page in doc:
-        blocks = page.get_text("dict")["blocks"] # diccionario de información sobre los bloques de información: posición y líneas con spans de cada bloque de información
-        """
-        la variable 'blocks' contendrá un diccionario de información 
-        de cada bloque de texto extraído ("blocks") con los siguientes campos:
+        blocks = page.get_text("dict")["blocks"] # diccionario de datos sobre los bloques de información: posición y líneas con los spans de cada bloque de información
+        """ Estructura:
+        
+         - bbox: coordenadas del rectángulo delimitador del bloque
+                 (posición y tamaño del bloque en la página).
 
-         - bbox: Coordenadas del rectángulo delimitador del bloque de texto
-                 (representa la posición y el tamaño del bloque en la página).
-
-         - lines: Lista de líneas de texto dentro del bloque.
+         - lines: lista de líneas de texto dentro del bloque.
                   Cada línea es un diccionario que contiene:
 
-                  - spans: Lista de fragmentos de texto de dentro de esa línea.
+                  - spans: lista de fragmentos de texto de dentro de esa línea.
                            Cada fragmento incluye información como:
-                             * El propio texto del fragmento.
-                             * La fuente utilizada.
-                             * El tamaño del texto.
-                             * Otros atributos relacionados con el formato.
+                             * el propio texto del fragmento.
+                             * la fuente utilizada.
+                             * el tamaño del texto.
+                             * otros atributos relacionados con el formato.
         """
 
         if not blocks:
@@ -165,10 +169,10 @@ def extract_txt(pdf_path):
         page_width = page.rect.width
         page_height = page.rect.height
 
-        # se eliminan los encabezados y pie de página
+        # se eliminan los encabezados y pies de página
         nonheadfoot_blocks = filter_header_footer(blocks, page_height)
 
-        # Agrupamos todos los bloques en zonas verticales
+        # Agrupamos todos los bloques por zonas verticales mediante "clustering"
         vertical_clusters = cluster_blocks_vertically(nonheadfoot_blocks)
 
         page_text = ""
@@ -177,8 +181,9 @@ def extract_txt(pdf_path):
         for zone in vertical_clusters:
             two_col, content = analyze_zone_layout(zone, page_width)
 
-            # información en dos columnas
+            # si se trata de zona de información en dos columnas
             if two_col is True:
+                # se procesan e incluyen los bloques de texto primero de la columna izquierda y después de la derecha
                 left_blocks, right_blocks = content
                 left_sorted = sorted(left_blocks, key=lambda b: b["bbox"][1])
                 right_sorted = sorted(right_blocks, key=lambda b: b["bbox"][1])
@@ -188,8 +193,9 @@ def extract_txt(pdf_path):
                 for block in right_sorted:
                     page_text += block_process([block]) + "\n"
 
-            # información en una sola columna
-            elif two_col is False:
+            # si se trata de zona de información en una sola columna
+            else:
+                # se procesan e incluyen los bloques de texto de forma vertical descendente
                 sorted_blocks = sorted(content, key=lambda b: b["bbox"][1])
                 for block in sorted_blocks:
                     page_text += block_process([block]) + "\n"
@@ -200,17 +206,17 @@ def extract_txt(pdf_path):
     # se une el texto de todas las páginas
     accumulated_text = "\n".join(accumulated_lines)
 
-    # se limpian las líneas de posibles encabezados/pies de figuras no capturadas
+    # se limpian las descripciones de posibles encabezados/pies de figuras no capturadas
     cleaned_lines = []
     for line in accumulated_text.splitlines():
         if re.match(r'^(Fig\.|Figure)\s*\d+[\.:]?\s+.*$', line.strip(), re.IGNORECASE):
             continue
         cleaned_lines.append(line)
 
-    # se crea la cadena de texto casi final del PDF mediante la lista de cadenas (antes de eliminar las referencias innecesarias)
+    # se crea la cadena de texto casi final del PDF con la lista de cadenas "cleaned_lines" (antes de eliminar las referencias innecesarias)
     semifinal_text = "\n".join(cleaned_lines)
 
-    # si existen referencias al final del pdf, se eliminan del texto útil
+    # si existe el apartado de referencias al final del pdf, se elimina del texto útil
     match = re.search(r'^References\b', semifinal_text, re.MULTILINE)
     if match:
         final_text = semifinal_text[:match.start()]
@@ -235,11 +241,12 @@ def process_pdf(pdf_root: str, txt_root: str):
         if pdfs_dirpath == pdf_root:
             continue
 
+        # se tratan los subdirectorios de los PDFs para formar los correspondientes a los archivos de texto
         pdf_files = [f for f in files if f.endswith(".pdf")]
         rel_path = os.path.relpath(pdfs_dirpath, pdf_root) # ej.: \Papers 20-21 (no se incluye el directorio raíz)
         txt_dir = os.path.join(txt_root, rel_path) # ej.: .\txt_data\Papers 20-21
 
-        # si no hay PDFs, se eliminan todos los .txt
+        # si no hay ningún PDF en un subdirectorio, pero sí .txt en el subdirectorio correspondiente, los archivos de texto se eliminan
         if not pdf_files:
             if os.path.exists(txt_dir):
                 for txt_file in os.listdir(txt_dir):
@@ -253,13 +260,13 @@ def process_pdf(pdf_root: str, txt_root: str):
         if not os.path.exists(txt_dir):
             os.makedirs(txt_dir)
 
-        # se recogen los archivos .txt del el directorio actual
+        # se recogen los archivos .txt del directorio actual
         txt_files = [f for f in os.listdir(txt_dir) if f.endswith(".txt")]
 
-        # se crea un conjunto de archivos .txt esperados basados en los PDFs
+        # se estima, a modo de comprobación, un conjunto de nombres de archivos .txt esperados basados en los de los PDFs
         expected_txt_files = {pdf_file.replace(".pdf", ".txt") for pdf_file in pdf_files}
 
-        # se eliminan los .txt cuyos pdfs ya no existen entre los que sí hay
+        # se eliminan los .txt cuyos pdfs ya no existen dentro del conjunto de los que sí hay
         for txt_file in txt_files:
             if txt_file not in expected_txt_files:
                 os.remove(os.path.join(txt_dir, txt_file))
@@ -274,7 +281,7 @@ def process_pdf(pdf_root: str, txt_root: str):
             if os.path.exists(txt_path) and os.path.getsize(txt_path) > 0:
                 continue
 
-            # se llama al extractor de texto con el pdf actual para su posterior escritura y almacenamiento de su versión .txt
+            # se llama al extractor de texto con el pdf actual para su posterior escritura y almacenamiento en versión .txt
             pdf_path = os.path.join(pdfs_dirpath, pdf_file)
             text = extract_txt(pdf_path)
 
@@ -283,7 +290,6 @@ def process_pdf(pdf_root: str, txt_root: str):
                     f.write(text)
                 print(f"Extracción de datos exitosa sobre \"{pdf_path}\".")
                 extracted_count += 1
-
             else:
                 print(f"Advertencia: {pdf_path} no tiene bloques útiles o legibles.")
                 notextracted_count += 1
