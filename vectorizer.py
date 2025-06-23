@@ -86,7 +86,7 @@ def chunker(text, chunk_len, overlap):
 
 
 # Vectorizar y añadir los nuevos archivos .txt a la base de datos
-def vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, chunk_len, overlap, output):
+def vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, output):
     # se tiene en cuenta los posibles documentos de los chunks ya existentes en la base de datos para evitar duplicados
     existing_sources = set()
 
@@ -116,7 +116,7 @@ def vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, chunk_len, over
                     content = f.read()
 
                 # se recurre al chunkeo del contenido del archivo
-                chunks = chunker(content, chunk_len, overlap)
+                chunks = chunker(content, CHUNK_LEN, OVERLAP)
 
                 # por cada chunk, se crea un nuevo objeto Document con su contenido y metadatos
                 for i, chunk in enumerate(chunks):
@@ -197,7 +197,7 @@ def faiss_db_exists(output):
 
 
 # Crear/Actualizar en disco la base de datos vectorial FAISS con los archivos de texto ya procesados
-def save_processed_data(texts_dir: str, output: str, chunk_len, overlap):
+def save_processed_data(texts_dir: str, output: str):
     keep_documents = False
 
     # se trata con los archivos .txt existentes en el directorio txt_data
@@ -228,13 +228,13 @@ def save_processed_data(texts_dir: str, output: str, chunk_len, overlap):
         if deleted_files:
             print(f"Se ha(n) detectado como eliminado(s) {len(deleted_files)} archivo(s). Actualizando por ello toda la base de datos...")
             faiss_db = create_faiss_db()
-            vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, chunk_len, overlap, output)
+            vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, output)
 
         # si se han añadido archivos nuevos, se vectorizan y añaden a la base de datos
         elif added_files:
             print(f"Se ha(n) detectado {len(added_files)} archivo(s) nuevo(s). Procediendo a actualizar la base de datos...")
             keep_documents = True
-            vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, chunk_len, overlap, output)
+            vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, output)
 
         # si no se han eliminado ni añadido archivos, la base de datos ya está actualizada
         else:
@@ -245,9 +245,9 @@ def save_processed_data(texts_dir: str, output: str, chunk_len, overlap):
     else:
         print("Creando nueva base de datos FAISS...")
         faiss_db = create_faiss_db()
-        vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, chunk_len, overlap, output)
+        vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, output)
 
 
 # Función principal
 if __name__ == "__main__":
-    save_processed_data(TXT_ROOT_PATH, DATABASE_PATH, CHUNK_LEN, OVERLAP)
+    save_processed_data(TXT_ROOT_PATH, DATABASE_PATH)
