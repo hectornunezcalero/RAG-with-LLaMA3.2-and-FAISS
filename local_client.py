@@ -47,7 +47,7 @@ LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "192.168.XX.XX"
 API_KEY = "f4d3c2b1a9876543210fedcba"
 VECTOR_DB_PATH = "./vector_db"
-MAX_TOKENS = 4096
+MAX_TOKENS = 1024
 
 # se cargan los índices de los vectores de la base de datos
 index = faiss.read_index(f"{VECTOR_DB_PATH}/index.faiss")
@@ -76,10 +76,10 @@ class Llama32CLI:
         # si se hace una pregunta relativa a la misma sesión, se reutiliza el contexto de la primera pregunta
         prompt = None
 
-        # si se trata de una nueva sesión, se encuentran los 6 chunks más relacionados de únicamente la primera query dentro de la base de datos,
+        # si se trata de una nueva sesión, se encuentran los 5 chunks más relacionados de únicamente la primera query dentro de la base de datos,
         # devolviéndose los objetos 'Document' correspondientes del docstore.
         if self.session_id == "0":
-            self.last_docs = faiss_db.similarity_search(question, k=6)
+            self.last_docs = faiss_db.similarity_search(question, k=5)
             print(f"Chunks rescatados por similitud: {len(self.last_docs)}")
             for i, doc in enumerate(self.last_docs):
                 chunk_preview = " ".join(doc.page_content.split()[:25]) + "..."
@@ -107,7 +107,7 @@ class Llama32CLI:
 
 
         # se prepara el cuerpo de la petición al servidor (pooling y task no necesarios, al ser una petición de generación de texto)
-        # el contenido será la query, los tokens máximos de respuesta serán 4096 y el prompt el creado anteriormente
+        # el contenido será la query, los tokens máximos de respuesta serán 1024 y el prompt el creado anteriormente
         data = {
             "content": [question],
             "max_tokens": MAX_TOKENS,
