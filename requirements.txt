@@ -18,6 +18,7 @@ googletrans                       # usado por el cliente para traducir el texto 
 # ya incluidos por python:
 
 # os                              # usado por data_extractor y vectorizer para manejar rutas, directorios, archivos y operaciones del sistema de ficheros
+# shutil                          # usado por data_extractor para eliminar directorios
 # re                              # usado por data_extractor para limpiar y procesar texto mediante expresiones regulares
 # logging                         # usado por vectorizer, cliente y servidor para controlar y personalizar la salida de mensajes, avisos y errores
 # pickle                          # usado por el cliente para guardar y cargar los objetos serializados (por ejemplo, los índices)
