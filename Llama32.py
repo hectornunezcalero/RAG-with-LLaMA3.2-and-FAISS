@@ -2,7 +2,7 @@
 #                                                                       #
 #       Universidad de Alcalá - Escuela Politécnica Superior            #
 #                                                                       #
-#       Grado en Ingeniería Telemática   -   Curso 2025/2026            #
+#       Grado en Ingeniería Telemática - Curso 2025/2026                #
 #                                                                       #
 #                                                                       #
 #       Trabajo de Fin de Grado:                                        #
@@ -20,11 +20,9 @@
 #       Script: Llama32.py                                              #
 #       Funciones principales:                                          #
 #        1. Inicializar el modelo LLaMa 3.2 3B localmente               #
-#        2. Configurar tareas de NLP: generación, extracción de         #
-#           características, clasificación (no implementada)            #
-#        3. Gestionar tokenizador y pipeline de transformers            #
-#        4. Ejecutar la tarea seleccionada y manejar la generación      #
-#           y procesamiento de textos                                   #
+#        2. Utilizar el tokenizador y pipeline de transformers          #
+#        3. Gestionar mensajes system, usuario y asistente              #
+#        4. Ejecutar la generación de texto y devolver respuesta        #
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
@@ -63,10 +61,10 @@ class Llama3:
         # el nuevo pipeline se crea con el modelo y el tokenizador adecuados
         self.pipe = pipeline(
             "text-generation",
-            tokenizer=self.tokenizer,
-            model=__llama_path__,
-            torch_dtype=torch.bfloat16,
-            device_map=0 if self.gpu else 'cpu',
+            tokenizer = self.tokenizer,
+            model = __llama_path__,
+            torch_dtype = torch.bfloat16,
+            device_map = 0 if self.gpu else 'cpu',
         )
         logging.info("Modelo Llama3.2 cargado para generación de texto.")
 
