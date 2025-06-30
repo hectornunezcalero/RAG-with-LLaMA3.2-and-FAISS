@@ -7,13 +7,13 @@
 #                                                                       #
 #       Trabajo de Fin de Grado:                                        #
 #           Sistema de Generación Aumentada por Recuperación (RAG)      #
-#           con LLaMA 3.2 como asistente para consultas                 #
-#           sobre documentos PDF                                        #
+#           con LLaMA 3.2 como LLM para consultas                       #
+#           sobre documentos o artículos en PDF                         #
 #                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
-#       Cotutor: Alberto Palomo Alonso                                  #
 #       Tutor: Jorge Pérez Aracil                                       #
+#       Cotutor: Alberto Palomo Alonso                                  #
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #

@@ -12,8 +12,8 @@
 #                                                                       #
 #                                                                       #
 #       Autor: Héctor Núñez Calero                                      #
-#       Cotutor: Alberto Palomo Alonso                                  #
 #       Tutor: Jorge Pérez Aracil                                       #
+#       Cotutor: Alberto Palomo Alonso                                  #
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #
