@@ -35,8 +35,6 @@ This repository contains a complete system for the local integration of the LLaM
 
 ## ⚙️ Prerequisites
 
-Antes de comenzar, asegúrese de cumplir con lo siguiente:
-
 - Operating System: **Windows 10/11**.
 - **Python 3.10 or 3.11** installed and added to PATH**.
 - Latest pip version: 
