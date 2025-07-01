@@ -159,6 +159,6 @@ Do not redistribute or use the model for commercial purposes without authorizati
 
 **Author**: Héctor Núñez Calero.
 
-**Academic Year:**: 2025/2026.
+**Academic Year**: 2025/2026.
 
 **Contact**: *[hector.nunez@edu.uah.es]*.
