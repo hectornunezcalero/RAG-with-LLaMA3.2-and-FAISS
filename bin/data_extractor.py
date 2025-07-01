@@ -31,8 +31,8 @@ import os  # manejar rutas, directorios, archivos y operaciones del sistema de f
 import shutil  # eliminar directorios
 import re  # limpiar y procesar texto mediante expresiones regulares
 
-PDF_ROOT_PATH = "..\\data\\pdfdata"
-TXT_ROOT_PATH = "..\\data\\txtdata"
+PDF_ROOT_PATH = "../data/pdfdata"
+TXT_ROOT_PATH = "../data/txtdata"
 
 
 def block_process(blocks):

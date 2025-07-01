@@ -35,8 +35,8 @@ import faiss  # consultar la base de datos vectorial FAISS
 import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
 import logging  # controlar y personalizar la salida de mensajes, avisos y errores
 
-TXT_ROOT_PATH = "..\\data\\txtdata"
-DATABASE_PATH = "..\\data\\vector_db"
+TXT_ROOT_PATH = "../data/txtdata"
+DATABASE_PATH = "../data/vector_db"
 CHUNK_LEN = 180
 OVERLAP = 30
 

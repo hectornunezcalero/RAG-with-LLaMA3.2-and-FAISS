@@ -34,7 +34,7 @@ import logging  # controlar y personalizar la salida de mensajes, avisos y error
 MAX_MESSAGES = 21
 
 # se establece la ruta del modelo Llama3.2
-__llama_path__ = "./model"
+__llama_path__ = "../model"
 
 
 class Llama3:

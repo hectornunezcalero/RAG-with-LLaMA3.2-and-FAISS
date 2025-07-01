@@ -46,7 +46,7 @@ import asyncio  # manejar la ejecución de código asíncrono, en este caso para
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "127.0.0.1"
 API_KEY = "f4d3c2b1a9876543210fedcba"
-VECTOR_DB_PATH = "..\\data\\vector_db"
+VECTOR_DB_PATH = "../data/vector_db"
 MAX_TOKENS = 1024
 
 # se cargan los índices de los vectores de la base de datos
