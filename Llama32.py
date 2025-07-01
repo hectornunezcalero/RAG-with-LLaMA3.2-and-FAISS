@@ -87,7 +87,7 @@ class Llama3:
         # si el modelo ya tiene mensajes, para no perder funcionamiento,
         # se eliminan mensajes menos el prompt y los últimos mensajes pregunta-respuesta
         if len(self.messages) > MAX_MESSAGES:
-            self.messages = [self.prompt] + self.messages[-(MAX_MESSAGES - 1):]
+            self.messages = self.messages[:3] + self.messages[5:]
 
         # se genera la respuesta del modelo sobre la pregunta recibida
         response = self.pipe(messages=self.messages, max_new_tokens=max_tokens)[0]
