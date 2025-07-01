@@ -19,7 +19,7 @@
 #                                                                       #
 #       Script: Llama32.py                                              #
 #       Funciones principales:                                          #
-#        1. Inicializar el modelo LLaMa 3.2 3B localmente               #
+#        1. Inicializar el modelo LLaMA 3.2 3B localmente               #
 #        2. Utilizar el tokenizador y pipeline de transformers          #
 #        3. Gestionar mensajes system, usuario y asistente              #
 #        4. Ejecutar la generación de texto y devolver respuesta        #

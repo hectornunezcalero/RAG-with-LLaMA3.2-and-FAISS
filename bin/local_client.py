@@ -19,7 +19,7 @@
 #                                                                       #
 #       Script: client_local1.py                                        #
 #       Funciones principales:                                          #
-#        1. Prestar la GUI con Tkinter para interactuar con LLaMa 3.2   #
+#        1. Prestar la GUI con Tkinter para interactuar con LLaMA 3.2   #
 #           a modo de pregunta-respuesta                                #
 #        2. Buscar documentos relacionados en la base de datos FAISS    #
 #        3. Enviar consultas al servidor que dispone del LLM            #
