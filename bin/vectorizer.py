@@ -35,8 +35,8 @@ import faiss  # consultar la base de datos vectorial FAISS
 import os  # manejar rutas, directorios, archivos y operaciones del sistema de ficheros
 import logging  # controlar y personalizar la salida de mensajes, avisos y errores
 
-TXT_ROOT_PATH = ".\\txtdata"
-DATABASE_PATH = ".\\vector_db"
+TXT_ROOT_PATH = "..\\data\\txtdata"
+DATABASE_PATH = "..\\data\\vector_db"
 CHUNK_LEN = 180
 OVERLAP = 30
 
@@ -48,8 +48,16 @@ tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L12-
 embedding_model = HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2')
 
 
-# Dividir el texto en chunks para facilitar la búsqueda de similitudes semánticas
 def chunker(text, chunk_len, overlap):
+    """
+    Splits input text into overlapping chunks based on token counts.
+    Args:
+        text (str): Original text to split.
+        chunk_len (int): Maximum number of tokens per chunk.
+        overlap (int): Number of tokens to overlap between consecutive chunks.
+    Returns:
+        List[str]: List of text chunks extracted from the original text.
+    """
     # 'encoding' recopila los IDs de los tokens del modelo y los offsets de cada token en el texto para su posterior uso
     encoding = tokenizer(text, return_offsets_mapping=True, add_special_tokens=False)
 
@@ -85,8 +93,15 @@ def chunker(text, chunk_len, overlap):
     return chunks
 
 
-# Vectorizar y añadir los nuevos archivos .txt a la base de datos
 def vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, output):
+    """
+    Vectorizes and adds new .txt files to the FAISS database, optionally avoiding duplicates.
+    Args:
+        texts_dir (str): Root directory containing .txt files.
+        keep_documents (bool): If True, preserves and compares with existing documents to avoid duplicates.
+        faiss_db (FAISS): FAISS database instance to add new vectors.
+        output (str): Path where the updated FAISS database will be saved.
+    """
     # se tiene en cuenta los posibles documentos de los chunks ya existentes en la base de datos para evitar duplicados
     existing_sources = set()
 
@@ -140,8 +155,12 @@ def vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, output):
     print(f"Sumando un total de {files_num} representados.")
 
 
-# Crear la base de datos en memoria RAM
 def create_faiss_db():
+    """
+    Creates an empty FAISS database instance configured to store text embeddings.
+    Returns:
+        FAISS: Initialized FAISS database instance.
+    """
     # en primer lugar, se crean los índice-vector, el docstore y las relaciones índice-vector <-> docstore
     dimension = len(embedding_model.embed_query("test")) # dimensión vectorial para el modelo de embeddings (384 dimensiones para 'all-MiniLM-L12-v2')
     index = faiss.IndexFlatL2(dimension) # objeto faiss con los índices y vectores N-dimensionales de la base de datos
@@ -186,8 +205,14 @@ def create_faiss_db():
     return faiss_db
 
 
-# Comprobar la existencia de la base de datos ubicada en disco
 def faiss_db_exists(output):
+    """
+    Checks if persistent FAISS database files exist on disk.
+    Args:
+        output (str): Directory path where `index.faiss` and `index.pkl` are stored.
+    Returns:
+        bool: True if both files exist and are not empty; False otherwise.
+    """
     faiss_index_path = os.path.join(output, "index.faiss")
     faiss_pkl_path = os.path.join(output, "index.pkl")
     return (
@@ -196,8 +221,14 @@ def faiss_db_exists(output):
     )
 
 
-# Crear/Actualizar en disco la base de datos vectorial FAISS con los archivos de texto ya procesados
 def save_processed_data(texts_dir: str, output: str):
+    """
+    Creates or updates the FAISS database with available .txt files.
+    Detects new or deleted files and updates the database accordingly.
+    Args:
+        texts_dir (str): Directory containing text files.
+        output (str): Path to save the FAISS database.
+    """
     keep_documents = False
 
     # se trata con los archivos .txt existentes en el directorio txt_data
@@ -251,3 +282,9 @@ def save_processed_data(texts_dir: str, output: str):
 # Función principal
 if __name__ == "__main__":
     save_processed_data(TXT_ROOT_PATH, DATABASE_PATH)
+
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#                               END OF FILE                             #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #

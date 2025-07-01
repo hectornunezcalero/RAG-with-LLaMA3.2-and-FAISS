@@ -31,12 +31,18 @@ import os  # manejar rutas, directorios, archivos y operaciones del sistema de f
 import shutil  # eliminar directorios
 import re  # limpiar y procesar texto mediante expresiones regulares
 
-PDF_ROOT_PATH = ".\\pdfdata"
-TXT_ROOT_PATH = ".\\txtdata"
+PDF_ROOT_PATH = "..\\data\\pdfdata"
+TXT_ROOT_PATH = "..\\data\\txtdata"
 
 
-# Procesar los bloques de información de cada la página
 def block_process(blocks):
+    """
+    Processes a list of text blocks extracted from a PDF page by concatenating their cleaned content.
+    Args:
+        blocks (list[dict]): List of structured text blocks extracted with PyMuPDF.
+    Returns:
+        str: Cleaned and concatenated text of all blocks.
+    """
     parts = []
     for block in blocks:
         content = ""
@@ -54,8 +60,16 @@ def block_process(blocks):
     return "\n".join(parts)
 
 
-# Determinar si los bloques de texto de una determinada zona vertical están organizados en una o dos columnas
 def is_two_column_layout(blocks, page_width):
+    """
+    Determines whether the text blocks are arranged in two columns.
+    Args:
+        blocks (list[dict]): List of text blocks with coordinates (bbox).
+        page_width (float): Width of the current page in points.
+    Returns:
+        tuple: (left_blocks, right_blocks) if two columns are detected,
+               or (all_blocks, []) if a single column layout is assumed.
+    """
     # se usan las posiciones horizontales de los bloques para determinar si hay dos columnas
     centers = []
     for b in blocks:
@@ -91,8 +105,16 @@ def is_two_column_layout(blocks, page_width):
         return blocks, []
 
 
-# Analizar el formato de columnas dentro de una zona vertical
 def analyze_zone_layout(blocks_zone, page_width):
+    """
+    Analyzes if a vertically grouped set of blocks is in one or two columns.
+    Args:
+        blocks_zone (list[dict]): List of blocks within a vertical zone.
+        page_width (float): Page width used to estimate separation.
+    Returns:
+        tuple: (is_two_columns, formatted_blocks)
+               where `formatted_blocks` is either (left, right) or the full list.
+    """
     left, right = is_two_column_layout(blocks_zone, page_width)
     if right:
         return True, (left, right)
@@ -100,8 +122,14 @@ def analyze_zone_layout(blocks_zone, page_width):
         return False, blocks_zone
 
 
-# Agrupar bloques por zonas verticales según su proximidad en Y
 def cluster_blocks_vertically(blocks):
+    """
+    Groups blocks by vertical proximity to form coherent content zones.
+    Args:
+        blocks (list[dict]): List of blocks with coordinates (bbox).
+    Returns:
+        list[list[dict]]: List of vertically related groups of blocks.
+    """
     # se ordenan y agrupan los bloques por su posición vertical superior, para así agrupar los bloques cercanos entre sí
     blocks_sorted = sorted(blocks, key=lambda b: b["bbox"][1])
     clusters = []
@@ -131,8 +159,15 @@ def cluster_blocks_vertically(blocks):
     return clusters
 
 
-# Filtrar encabezados y pies de página (estrictamente marginados por heurística de anclaje) de los bloques de texto
 def filter_header_footer(blocks, page_height):
+    """
+    Removes blocks likely belonging to headers or footers based on vertical heuristics.
+    Args:
+        blocks (list[dict]): Text blocks on the page.
+        page_height (float): Height of the page.
+    Returns:
+        list[dict]: Blocks not in top or bottom margins.
+    """
     margin_top = page_height * 0.08
     margin_bot = page_height * 0.925
 
@@ -141,8 +176,14 @@ def filter_header_footer(blocks, page_height):
     return not_headfoot_blocks
 
 
-# Extraer el texto de un PDF por bloques, clasificando por tipo de bloque (texto plano o no texto plano)
 def extract_txt(pdf_path):
+    """
+    Extracts text from a PDF, organizing blocks by zones and columns, removing unnecessary references.
+    Args:
+        pdf_path (str): Path to the PDF file to process.
+    Returns:
+        str: Extracted and cleaned text from the PDF.
+    """
     doc = fitz.open(pdf_path)
     accumulated_lines = []
 
@@ -227,8 +268,14 @@ def extract_txt(pdf_path):
     return final_text.strip()
 
 
-# Procesar los PDFs y extraer su texto a archivos .txt
 def process_pdf(pdf_root: str, txt_root: str):
+    """
+    Walks through all PDF subdirectories, extracts their text content, and saves it as `.txt` files.
+    Also deletes orphan `.txt` files (where PDFs were removed) and folders without associated PDFs.
+    Args:
+        pdf_root (str): Path to the root directory containing subfolders with PDFs.
+        txt_root (str): Path where the generated `.txt` files will be saved.
+    """
     nopdf_count = 0
     deleted_count = 0
     extracted_count = 0
@@ -328,3 +375,9 @@ def process_pdf(pdf_root: str, txt_root: str):
 # Función principal
 if __name__ == "__main__":
     process_pdf(PDF_ROOT_PATH, TXT_ROOT_PATH)
+
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#                               END OF FILE                             #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #

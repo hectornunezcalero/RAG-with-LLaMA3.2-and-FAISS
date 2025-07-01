@@ -46,7 +46,7 @@ import asyncio  # manejar la ejecución de código asíncrono, en este caso para
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "127.0.0.1"
 API_KEY = "f4d3c2b1a9876543210fedcba"
-VECTOR_DB_PATH = "./vector_db"
+VECTOR_DB_PATH = "..\\data\\vector_db"
 MAX_TOKENS = 1024
 
 # se cargan los índices de los vectores de la base de datos
@@ -61,17 +61,32 @@ embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-Mi
 faiss_db = FAISS(index=index, docstore=docstore, index_to_docstore_id=index_to_docstore_id, embedding_function=embedding_model)
 
 
-# Clase para manejar la interacción del cliente con el LLM (Llama3.2)
 class Llama32CLI:
+    """
+    Client managing communication with the LLaMA 3.2 model server.
+    Encapsulates question sending, session control, and prompt construction
+    using documents retrieved by similarity from the FAISS database.
+    """
     def __init__(self):
+        """
+        Initializes client with session ID, previous documents, and control variables.
+        """
         self.session_id = "0"
         self.last_docs = []
         self.last_sources = []
         self.contexto = None
         self.last_timestamp = None
 
-    # Procesar la solicitud del usuario
     def process_request(self, question: str):
+        """
+        Processes a user query interacting with the server.
+        - For a new session, builds prompt with context from FAISS database.
+        - For existing session, reuses previous context.
+        Args:
+            question (str): User question.
+        Returns:
+            dict: Server response with content, status, and session ID.
+        """
         docs = self.last_docs
         # si se hace una pregunta relativa a la misma sesión, se reutiliza el contexto de la primera pregunta
         prompt = None
@@ -141,9 +156,26 @@ class Llama32CLI:
             return {"response": "Error del servidor", "status_code": response.status_code}
 
 
-# Clase para crear los botones personalizados para la toma de decisiones en la interfaz Tkinter
 class TkButtons(tk.Canvas):
+    """
+    Custom modern styled interactive button based on Tkinter Canvas.
+    Allows setting normal and hover colors and a callback on click.
+    """
     def __init__(self, parent, text, command=None, font=None, bg="#a7d7c5", fg="#2e2e2e", hover_bg="#c5e1d8", width=140, height=50, radius=20):
+        """
+        Creates a rounded button with custom text and colors.
+        Args:
+            parent (tk.Widget): Parent widget.
+            text (str): Button text.
+            command (Callable): Function to call on click.
+            font (tuple): Text font.
+            bg (str): Normal background color.
+            fg (str): Text color.
+            hover_bg (str): Hover background color.
+            width (int): Button width.
+            height (int): Button height.
+            radius (int): Corner rounding radius.
+        """
         super().__init__(parent, width=width, height=height, highlightthickness=0, bg=parent['bg'])
         self.command = command
         self.bg = bg
@@ -204,9 +236,17 @@ class TkButtons(tk.Canvas):
             self.command()
 
 
-# Clase para definir cómo es la interfaz gráfica de usuario y controlar cualquier evento que ocurra en ella
 class Llama3GUI:
+    """
+    GUI for interacting with LLaMA 3.2 model using enriched queries.
+    Features conversation history, source visualization, session reset, saving results, and adaptive layout.
+    """
     def __init__(self, root):
+        """
+        Initializes the main window and all visual elements.
+        Args:
+            root (tk.Tk): Main Tkinter instance.
+        """
         self.client = Llama32CLI()
         self.root = root
         self.root.title("Chat Cliente")
@@ -293,8 +333,12 @@ class Llama3GUI:
         self.save_button = TkButtons(bottom_button_frame, "Guardar conversación", command=self.save_conversation, bg=save_button_color, fg=text_color, hover_bg=save_button_color_hover, width=200, height=45, radius=15, font=("Segoe UI", 12, "bold"))
         self.save_button.pack(side="left", ipadx=15)
 
-    # Redimensionar la ventana a más pequeña
     def on_configure(self, event):
+        """
+        Detects window size changes and adjusts content if resized down from maximized state.
+        Args:
+            event (tk.Event): System event.
+        """
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         width, height = self.root.winfo_width(), self.root.winfo_height()
@@ -306,8 +350,10 @@ class Llama3GUI:
 
         self.was_maximized = width >= screen_width - 20 and height >= screen_height - 80
 
-    # Ajustar el tamaño de la ventana al contenido actual
     def fit_window_to_contents(self):
+        """
+        Automatically resizes the window to fit current visual content.
+        """
         self.root.update_idletasks()
 
         content_frame = self.root.winfo_children()[0]
@@ -332,8 +378,11 @@ class Llama3GUI:
         self.root.geometry(f"{final_width}x{final_height}+{x}+{y}")
 
 
-    # Enviar la pregunta al servidor y procesar la respuesta
     def send_question(self):
+        """
+        Captures user's question and processes it in a separate thread.
+        Prevents sending if another query is in progress.
+        """
         if self.is_processing:
             messagebox.showwarning("Advertencia", "Por favor, espere a que la última respuesta sea respondida antes de enviar otra pregunta.")
             return
@@ -370,8 +419,12 @@ class Llama3GUI:
         # consiguiendo así sustituir el "Pensando..." con la respuesta y no bloquear la GUI
         threading.Thread(target=self.process_question_in_thread, args=(question,)).start()
 
-    # Procesar la pregunta en el hilo
     def process_question_in_thread(self, question):
+        """
+        Processes user question in a separate thread: translates it and sends to server.
+        Args:
+            question (str): Original user question in Spanish.
+        """
         # en primer lugar, se traduce la pregunta al inglés, por si acaso
         translator = Translator()
         tr_question = asyncio.run(translator.translate(question, dest='en')).text
@@ -385,6 +438,12 @@ class Llama3GUI:
         self.root.after(0, self.display_response, response, question)
 
     def display_response(self, response, question):
+        """
+        Displays the server response in the conversation history, removing the 'Thinking...' message.
+        Args:
+            response (dict): Response returned by the server.
+            question (str): Question that originated the response.
+        """
         self.chat_text.config(state="normal")
 
         # se consigue el contenido de la respuesta comprobándose el éxito de la misma
@@ -431,8 +490,10 @@ class Llama3GUI:
         self.is_processing = False
 
 
-    # Enseñar los archivos fuente utilizados en las respuestas de la conversación
     def show_sources(self):
+        """
+        Shows a popup with source documents used for constructing the answer context.
+        """
         if not self.conversation_log:
             messagebox.showwarning("Advertencia", "Todavía no se ha realizado ninguna pregunta.")
             return
@@ -468,8 +529,10 @@ class Llama3GUI:
 
         text_area.config(state="disabled")
 
-    # Reiniciar la conversación y limpiar el historial
     def restart_chat(self):
+        """
+        Resets the current conversation by clearing the chat history, context, and documents used.
+        """
         # se evita interrumpir una respuesta en curso
         if self.is_processing:
             messagebox.showwarning("Advertencia", "Por favor, espere a que la última respuesta sea respondida antes de reiniciar la conversación.")
@@ -501,8 +564,10 @@ class Llama3GUI:
         self.client.contexto = None
 
 
-    # Guardar la conversación en un archivo de texto
     def save_conversation(self):
+        """
+        Saves the current conversation history and source documents to a `.txt` file selected by the user.
+        """
         # se evita guardar si no hay conversación previa
         if not self.conversation_log:
             messagebox.showwarning("Advertencia", "No hay conversación para guardar.")
@@ -549,3 +614,9 @@ if __name__ == "__main__":
     app = Llama3GUI(root)
     # se inicia el bucle principal de la aplicación, que mantiene la ventana abierta y responde a los eventos.
     root.mainloop()
+
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#                               END OF FILE                             #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #

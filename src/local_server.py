@@ -31,30 +31,48 @@
 import time  # usar 'time' para generar hashes sesiones únicas
 import hashlib  # generar un hash único de la sesión
 import numpy as np  # manejar datos de respuesta
-from Llama32 import Llama3  # importar la clase Llama3 que dispone del LLM
 import logging  # controlar y personalizar la salida de mensajes, avisos y errores
 from flask import Flask, request, jsonify  # conseguir una API RESTful que permita la comunicación con el modelo
+from src import Llama3  # importar la clase Llama3 que dispone del LLM
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SRV_IP = '127.0.0.1'
 
 # se establece el archivo de texto con la clave de acceso a la API
-__keys_path__ = "keys_path.txt"
+__keys_path__ = "../api_keys.txt"
 
 
-# Clase para el servidor que maneja las peticiones y el LLM
 class Llama3Server:
+    """
+    Flask server class to handle REST API requests for the Llama3.2 language model.
+    The server accepts POST requests with queries, validates API keys,
+    processes queries via the Llama3 model, and returns JSON responses.
+    Attributes:
+        app (Flask): Flask application instance.
+        llama (Llama3): Instance of the Llama3 model to process queries.
+    """
     def __init__(self, host = SRV_IP, port = LLAMA_PORT):
-        # se despliega el servidor y el modelo Llama3.2
+        """
+        Initializes and runs the Flask server along with the Llama3 model.
+        Args:
+            host (str): IP address where the server will run.
+            port (int): Port number on which the server listens.
+        """
         logging.info('Servidor con Llama3.2 inicializado.')
         self.app = Flask(__name__)
         self.llama = Llama3()
         self.app.route('/request', methods=['POST'])(self.query)
         self.app.run(host, port)
 
-    # Procesar la consulta recibida
     def query(self):
-        # se recolecta de las cabeceras la clave de acceso y la sesión, además de obtenerse los datos de la consulta
+        """
+        Handles POST requests to the '/request' endpoint.
+        Extracts API key and session from headers, validates the key,
+        processes the query using Llama3, and returns the result as JSON.
+        Returns:
+            Response JSON: Contains the generated response, HTTP status code,
+                           original query data, and session ID.
+        """
         key = request.headers.get('Authorization')
         session = request.headers.get('Session')
         data = request.json
@@ -105,9 +123,18 @@ class Llama3Server:
         return jsonify(response)
 
 
-    # Comprobar la validez de la clave de acceso enviada
     @staticmethod
     def validate_api_key(key):
+        """
+        Validates the provided API key against authorized keys stored in a file.
+        Reads available keys from a file and checks if the provided key matches any.
+        Args:
+            key (str): API key provided in the request header.
+        Returns:
+            tuple: (bool, str)
+                - True and username if the key is valid.
+                - False and '>Unknown<' if the key is invalid.
+        """
         # se abre el archivo de claves y se lee su contenido:
         with open(__keys_path__, 'r') as f:
             available_keys = f.read().split('\n')
@@ -119,3 +146,9 @@ class Llama3Server:
                 return True, username
         else:
             return False, ">Unknown<"
+
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#                               END OF FILE                             #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #

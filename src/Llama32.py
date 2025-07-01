@@ -37,10 +37,29 @@ MAX_MESSAGES = 21
 __llama_path__ = "./model"
 
 
-# Clase del modelo Llama3.2 que maneja las tareas de NLP
 class Llama3:
+    """
+    Class to manage the Llama3.2 text generation model based on Hugging Face Transformers.
+    Provides functionality to set an initial prompt, manage conversational context,
+    and generate text responses to user input.
+    Attributes:
+        pipe (pipeline): Hugging Face pipeline for text generation.
+        tokenizer (AutoTokenizer): Tokenizer associated with the model.
+        task (str): Task type (default 'generation').
+        messages (list): List of messages maintaining conversational context.
+        prompt (dict): Initial prompt of the conversation.
+        max_tokens (int): Maximum number of tokens to generate in responses.
+        pooling (str): Pooling strategy (currently unused).
+        gpu (bool): Whether to run the model on GPU (True) or CPU (False).
+    """
     def __init__(self, max_tokens: int = 4096, pooling: str = 'none', gpu: bool = True):
-        # se inicializan los atributos del modelo:
+        """
+        Initializes the model instance, configuring pipeline, tokenizer, and parameters.
+        Args:
+            max_tokens (int): Maximum tokens allowed in generated text.
+            pooling (str): Pooling strategy for embeddings (optional).
+            gpu (bool): Flag to use GPU (True) or CPU (False).
+        """
         self.pipe = None
         self.tokenizer = None
         self.task = 'generation'
@@ -53,8 +72,10 @@ class Llama3:
         # se prepara el pipeline del modelo Llama3.2
         self._init_pipeline()
 
-    # Establecer el pipeline del modelo
     def _init_pipeline(self):
+        """
+        Initializes the text generation pipeline and tokenizer for Llama3.2.
+        """
         self.tokenizer = AutoTokenizer.from_pretrained(__llama_path__)
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
@@ -69,8 +90,12 @@ class Llama3:
         logging.info("Modelo Llama3.2 cargado para generación de texto.")
 
 
-    # Establecer el prompt inicial del modelo para comenzar una conversación
     def set_prompt(self, prompt: str):
+        """
+        Sets the initial prompt to start a conversation with the model.
+        Args:
+            prompt (str): Text defining the initial or system context for the model.
+        """
         # el rol de esta transacción es "system" y el contenido el prompt
         self.prompt = {'role': 'system', 'content': prompt}
 
@@ -79,8 +104,15 @@ class Llama3:
         logging.info(f'Prompt establecido: {prompt}')
 
 
-    # Gestionar la consulta recibida, para que el modelo pueda responderla
     def text_generation_task(self, text: list[str], max_tokens):
+        """
+        Handles a text query and generates a response from the model.
+        Args:
+            text (list[str]): List of input user messages.
+            max_tokens (int): Maximum number of tokens to generate in the response.
+        Returns:
+            str: Generated text response from the model.
+        """
         # el rol de esta transacción es "user" y el contenido la pregunta recibida
         self.messages.append({'role': 'user', 'content': text})
 
@@ -98,13 +130,30 @@ class Llama3:
         return generated_text
 
 
-    # Permitir que la instancia Llama3 se use como función en el servidor
     def __call__(self, *args, **kwargs):
+        """
+        Enables the Llama3 instance to be called as a function for direct text generation.
+        Args:
+            *args: Input text arguments.
+            **kwargs: Additional parameters such as 'tokens' for max tokens.
+        Returns:
+            str: Generated text response from the model.
+        """
         # se obtiene el número máximo de tokens de los argumentos
         max_tokens = kwargs.get("tokens", self.max_tokens)
         # se llama directamente a la tarea de generación de texto con los argumentos recibidos
         return self.text_generation_task(list(args), max_tokens)
 
-    # Devolver una representación legible de la instancia Llama3
     def __repr__(self):
+        """
+        Returns a readable representation of the Llama3 instance.
+        Returns:
+            str: Description of the Llama3 object with task and max_tokens.
+        """
         return f'<Llama3.2: (tarea={self.task}, max_tokens={self.max_tokens})>'
+
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
+#                                                                       #
+#                               END OF FILE                             #
+#                                                                       #
+# - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #

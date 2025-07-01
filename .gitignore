@@ -6,17 +6,16 @@ __pycache__/
 
 # información del proyecto "no relevante"
 .idea
-/uah*
 
 # documentación pdf, txt y database
-pdfdata/*
-!pdfdata/.gitkeep
+data/pdfdata/*
+!data/pdfdata/.gitkeep
 
-txtdata/*
-!txtdata/.gitkeep
+data/txtdata/*
+!data/txtdata/.gitkeep
 
-vector_db/*
-!vector_db/.gitkeep
+data/vector_db/*
+!data/vector_db/.gitkeep
 
 model/
 !model/.gitkeep
