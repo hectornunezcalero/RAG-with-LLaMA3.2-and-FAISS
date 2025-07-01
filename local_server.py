@@ -36,7 +36,7 @@ import logging  # controlar y personalizar la salida de mensajes, avisos y error
 from flask import Flask, request, jsonify  # conseguir una API RESTful que permita la comunicación con el modelo
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
-SRV_IP = '192.168.XX.XX'
+SRV_IP = '127.0.0.1'
 
 # se establece el archivo de texto con la clave de acceso a la API
 __keys_path__ = "keys_path.txt"

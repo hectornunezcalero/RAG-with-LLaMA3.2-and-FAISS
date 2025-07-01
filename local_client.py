@@ -44,7 +44,7 @@ from googletrans import Translator  # traducir el texto de la pregunta siempre a
 import asyncio  # manejar la ejecución de código asíncrono, en este caso para la traducción
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
-SERVER_IP = "192.168.XX.XX"
+SERVER_IP = "127.0.0.1"
 API_KEY = "f4d3c2b1a9876543210fedcba"
 VECTOR_DB_PATH = "./vector_db"
 MAX_TOKENS = 1024
