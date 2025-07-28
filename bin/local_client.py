@@ -43,6 +43,9 @@ import requests  # hacer peticiones al servidor Flask que dispone del LLM
 from googletrans import Translator  # traducir el texto de la pregunta siempre al inglés para una mejor interactividad con el modelo Llama3.2
 import asyncio  # manejar la ejecución de código asíncrono, en este caso para la traducción
 
+import warnings # manejar las advertencias de la librería transformers
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SERVER_IP = "127.0.0.1"
 API_KEY = "f4d3c2b1a9876543210fedcba"
