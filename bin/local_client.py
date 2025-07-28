@@ -138,7 +138,7 @@ class Llama32CLI:
         url = f"http://{SERVER_IP}:{LLAMA_PORT}/request"
 
         # se envía la petición al servidor con el cuerpo y los headers
-        print("Enviando el query al LLM del servidor...")
+        print("Enviando la query al LLM del servidor...")
         try:
             response = requests.post(url, json=data, headers=headers)
         except Exception as ex:
