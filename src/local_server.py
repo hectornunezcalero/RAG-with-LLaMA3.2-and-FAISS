@@ -39,7 +39,7 @@ LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SRV_IP = '127.0.0.1'
 
 # se establece el archivo de texto con la clave de acceso a la API
-__keys_path__ = "../api_keys.txt"
+__keys_path__ = "../api_key.txt"
 
 
 class Llama3Server:

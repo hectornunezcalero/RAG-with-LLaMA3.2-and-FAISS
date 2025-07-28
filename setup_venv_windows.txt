@@ -26,10 +26,6 @@ huggingface-cli login
 
 - /bin 
 
-python data_extractor para PDF->TXT
-
-python vectorizer para TXT->FAISS
-
 python server_run.py
 
 python local_client.py
@@ -38,15 +34,21 @@ python local_client.py
 
 - De aquí en adelante:
 
-1. Abrir Powershell
+1. Abrir dos Powershells
 
-2. cd Desktop/main_dir
+En ambas:
+
+2. cd Desktop/RAG
 
 3. ./venv/Scripts/Activate.ps1
 
 4. cd bin
 
+En una:
+
 5. python server_run.py
+
+En la otra:
 
 6. python local_client.py
 

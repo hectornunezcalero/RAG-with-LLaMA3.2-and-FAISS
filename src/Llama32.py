@@ -84,8 +84,8 @@ class Llama3:
             "text-generation",
             tokenizer = self.tokenizer,
             model = __llama_path__,
-            torch_dtype = torch.bfloat16, # float16 para mayor eficiencia en GPU
-            device_map = 0, # 0 para usar la GPU si está disponible, 'cpu' para usar la CPU
+            torch_dtype = torch.bfloat16, # float32 para mayor eficiencia en GPU
+            device_map = 'cpu', # 0 para usar la GPU si está disponible, 'cpu' para usar la CPU
         )
         logging.info("Modelo Llama3.2 cargado para generación de texto.")
 
@@ -119,10 +119,13 @@ class Llama3:
         # si el modelo ya tiene mensajes, para no perder funcionamiento,
         # se eliminan mensajes menos el prompt y los últimos mensajes pregunta-respuesta
         if len(self.messages) > MAX_MESSAGES:
-            self.messages = self.messages[:3] + self.messages[5:]
+            self.messages = [self.prompt] + self.messages[-20:]
 
-        # se genera la respuesta del modelo sobre la pregunta recibida
-        response = self.pipe(messages=self.messages, max_new_tokens=max_tokens)[0]
+        # se convierte la lista de mensajes a un único texto plano para el modelo
+        prompt_text = "\n".join([f"{m['role']}: {m['content']}" for m in self.messages])
+
+        # se genera la respuesta del modelo
+        response = self.pipe(prompt_text, max_new_tokens=max_tokens)[0]
         generated_text = response["generated_text"].strip()
 
         # se añade el mensaje de la respuesta del modelo a la lista de mensajes y se devuelve dicha respuesta
