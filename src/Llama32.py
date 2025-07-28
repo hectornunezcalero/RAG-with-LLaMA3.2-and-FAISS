@@ -79,13 +79,13 @@ class Llama3:
         self.tokenizer = AutoTokenizer.from_pretrained(__llama_path__)
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        # el nuevo pipeline se crea con el modelo y el tokenizador adecuados
+        # el nuevo pipeline se crea con el tokenizador, modelo, formato de tensores y unidad para llevarlo a cabo
         self.pipe = pipeline(
             "text-generation",
             tokenizer = self.tokenizer,
             model = __llama_path__,
-            torch_dtype = torch.bfloat16,
-            device_map = 0 if self.gpu else 'cpu',
+            torch_dtype = torch.bfloat16, # float16 para mayor eficiencia en GPU
+            device_map = 0, # 0 para usar la GPU si está disponible, 'cpu' para usar la CPU
         )
         logging.info("Modelo Llama3.2 cargado para generación de texto.")
 

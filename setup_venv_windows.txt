@@ -1,12 +1,61 @@
+Descomprimir file pesado del LLM
+
+Adjuntar carpetas con papers en pdfdata
+
 # Install Python from https://www.python.org/downloads/
 # Check "Add Python to PATH" during installation
 
-python -m venv venv
 
-.\venv\Scripts\Activate.ps1
 
-# If you get an execution policy error:
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+- Powershell:
 
-pip install -r requirements.txt
+Desktop/main_dir: python -m venv venv
+
+como admin: Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+
+Desktop/main_dir: ./venv/Scripts/Activate.ps1
+
+Desktop/main_dir: pip install -r requirements.txt
+
+
+huggingface-cli login
+
+(token from Hugging Face)
+
+
+
+- /bin 
+
+python data_extractor para PDF->TXT
+
+python vectorizer para TXT->FAISS
+
+python server_run.py
+
+python local_client.py
+
+
+
+- De aquí en adelante:
+
+1. Abrir Powershell
+
+2. cd Desktop/main_dir
+
+3. ./venv/Scripts/Activate.ps1
+
+4. cd bin
+
+5. python server_run.py
+
+6. python local_client.py
+
+
+* Si hay nuevos papers en las carpetas, hacer ANTES del punto 5 y 6:
+
+python data_extractor.py
+
+python vectorizer.py
+
+
 
