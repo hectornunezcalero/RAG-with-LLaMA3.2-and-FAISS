@@ -52,7 +52,7 @@ class Llama3:
         pooling (str): Pooling strategy (currently unused).
         gpu (bool): Whether to run the model on GPU (True) or CPU (False).
     """
-    def __init__(self, max_tokens: int = 4096, pooling: str = 'none', gpu: bool = True):
+    def __init__(self, max_tokens: int = 1024, pooling: str = 'none', gpu: bool = True):
         """
         Initializes the model instance, configuring pipeline, tokenizer, and parameters.
         Args:
@@ -116,17 +116,21 @@ class Llama3:
         # el rol de esta transacción es "user" y el contenido la pregunta recibida
         self.messages.append({'role': 'user', 'content': text})
 
-        # si el modelo ya tiene mensajes, para no perder funcionamiento,
+        # si el modelo ya tiene 10 mensajes, para no perder funcionamiento,
         # se eliminan mensajes menos el prompt y los últimos mensajes pregunta-respuesta
         if len(self.messages) > MAX_MESSAGES:
             self.messages = [self.prompt] + self.messages[-20:]
 
         # se convierte la lista de mensajes a un único texto plano para el modelo
-        prompt_text = "\n".join([f"{m['role']}: {m['content']}" for m in self.messages])
+        acc_prompt = "\n".join([f"{m['role']}: {m['content']}" for m in self.messages])
 
-        # se genera la respuesta del modelo
-        response = self.pipe(prompt_text, max_new_tokens=max_tokens)[0]
+        # se genera la respuesta del modelo y se almacena el texto generado
+        response = self.pipe(acc_prompt, max_new_tokens=max_tokens)[0]
         generated_text = response["generated_text"].strip()
+
+        # se recortan los mensajes para devolver únicamente la respuesta del modelo
+        if generated_text.startswith(acc_prompt):
+            generated_text = generated_text[len(acc_prompt):].strip()
 
         # se añade el mensaje de la respuesta del modelo a la lista de mensajes y se devuelve dicha respuesta
         self.messages.append({'role': 'assistant', 'content': generated_text})

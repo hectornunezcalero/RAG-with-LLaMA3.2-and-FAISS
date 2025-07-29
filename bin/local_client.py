@@ -99,10 +99,6 @@ class Llama32CLI:
         if self.session_id == "0":
             self.last_docs = faiss_db.similarity_search(question, k=5)
             print(f"Chunks rescatados por similitud: {len(self.last_docs)}")
-            for i, doc in enumerate(self.last_docs):
-                chunk_preview = " ".join(doc.page_content.split()[:25]) + "..."
-                print(f" {i + 1}. {doc.metadata['source']} (chunk {doc.metadata['chunk_index']}): {chunk_preview}")
-
             # se crea el contexto una sola vez
             self.contexto = "\n\n".join(doc.page_content for doc in self.last_docs)
             contexto = self.contexto
@@ -141,6 +137,7 @@ class Llama32CLI:
         print("Enviando la query al LLM del servidor...")
         try:
             response = requests.post(url, json=data, headers=headers)
+            print("Respuesta obtenida.")
         except Exception as ex:
             logging.error(f"Connection error: {ex}")
             return {"response": "No se pudo conectar al servidor", "status_code": "Host Unreachable"}
@@ -316,12 +313,12 @@ class Llama3GUI:
         self.chat_text.pack(fill="both", expand=True, pady=(5, 10))
 
         # se configuran los estilos para los contenidos del chat
-        self.chat_text.tag_configure("timestamp", foreground="#888888", font=("Segoe UI", 9, "italic"), justify="center", spacing3=6)
+        self.chat_text.tag_configure("timestamp", foreground="#777777", font=("Segoe UI", 9, "italic"), justify="center", spacing3=6)
         self.chat_text.tag_configure("label_user", foreground="#5387bf", font=("Segoe UI", 11, "bold"))
         self.chat_text.tag_configure("bold_user", font=("Segoe UI", 11, "bold"))
         self.chat_text.tag_configure("label_assistant", foreground="#4a7c59", font=("Segoe UI", 11, "bold"))
         self.chat_text.tag_configure("user", justify="left", background="#e6f4ff", font=("Segoe UI", 11, "bold"), lmargin1=10, lmargin2=10, rmargin=150, spacing3=4)
-        self.chat_text.tag_configure("assistant", justify="right", font=("Segoe UI", 11), lmargin1=150, lmargin2=10, rmargin=10, spacing3=4)
+        self.chat_text.tag_configure("assistant", justify="left", font=("Segoe UI", 11), lmargin1=5, lmargin2=10, rmargin=10, spacing3=4)
         self.chat_text.tag_configure("thinking", justify="right", font=("Segoe UI", 11, "italic"), lmargin1=150, lmargin2=10, rmargin=10, spacing3=4)
 
         # se crea un marco para los botones restantes justo debajo de la anterior ventana
@@ -462,6 +459,9 @@ class Llama3GUI:
             self.chat_text.tag_delete("thinking_tag")
 
             # se expone la respuesta respetando posibles partes en negrita
+            timestamp = datetime.now().strftime("%H:%M:%S %d-%m-%Y")
+            self.client.last_timestamp = timestamp
+            self.chat_text.insert(tk.END, f"{timestamp}\n", "timestamp")
             self.chat_text.insert(tk.END, "Asistente: ", "label_assistant")
             parts = re.split(r"(\*\*.*?\*\*)", content.strip())
             for part in parts:
@@ -472,6 +472,9 @@ class Llama3GUI:
             self.chat_text.insert(tk.END, "\n\n", "assistant")
 
         else:
+            timestamp = datetime.now().strftime("%H:%M:%S %d-%m-%Y")
+            self.client.last_timestamp = timestamp
+            self.chat_text.insert(tk.END, f"{timestamp}\n", "timestamp")
             content = "Error: No se recibió una respuesta válida del servidor."
             self.chat_text.delete("thinking_tag.first", "thinking_tag.last")
             self.chat_text.tag_delete("thinking_tag")

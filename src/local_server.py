@@ -99,8 +99,10 @@ class Llama3Server:
 
         # se deja al LLM que procese la consulta y genere una respuesta
         try:
+            print("Procesando consulta...")
             answer = self.llama(*data_content, tokens=data_max_tokens)
             if isinstance(answer, list):
+                print("Respuesta generada. Enviando al cliente...")
                 new_answer = list()
                 for item in answer:
                     item = item.tolist() if isinstance(item, np.ndarray) else item
