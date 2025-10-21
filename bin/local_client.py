@@ -471,6 +471,7 @@ class Llama3GUI:
                     self.chat_text.insert(tk.END, part, "assistant")
             self.chat_text.insert(tk.END, "\n\n", "assistant")
 
+
         else:
             timestamp = datetime.now().strftime("%H:%M:%S %d-%m-%Y")
             self.client.last_timestamp = timestamp

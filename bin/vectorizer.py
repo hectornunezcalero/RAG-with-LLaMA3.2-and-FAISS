@@ -20,7 +20,7 @@
 #       Script: vectorizer.py                                           #
 #       Funciones principales:                                          #
 #        1. Crear/Cargar la base de datos vectorial FAISS               #
-#        2. Detectar cambios de archivos que impliquen a la bbdd        #
+#        2. Detectar cambios de archivos que impliquen a la db          #
 #        3. Chunkear los nuevos textos para las relaciones semánticas   #
 #        4. Generar los embeddings y almacenarlos en la base de datos   #
 #                                                                       #
