@@ -30,16 +30,17 @@
 
 import time  # usar 'time' para generar hashes sesiones únicas
 import hashlib  # generar un hash único de la sesión
+import os
 import numpy as np  # manejar datos de respuesta
 import logging  # controlar y personalizar la salida de mensajes, avisos y errores
 from flask import Flask, request, jsonify  # conseguir una API RESTful que permita la comunicación con el modelo
-from src import Llama3  # importar la clase Llama3 que dispone del LLM
+from src.Llama32 import Llama3  # importar la clase Llama3 que dispone del LLM
 
 LLAMA_PORT = sum([ord(c) for c in 'llama3.2']) + 5000
 SRV_IP = '127.0.0.1'
 
-# se establece el archivo de texto con la clave de acceso a la API
-__keys_path__ = "../api_key.txt"
+# se establece el archivo de texto con la clave de acceso a la API (ruta relativa a este fichero)
+__keys_path__ = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'api_key.txt'))
 
 
 class Llama3Server:
@@ -88,9 +89,9 @@ class Llama3Server:
 
         logging.info(f'Procesando petición de {username} con número de sesión {session}:\n{data}')
 
-        # se recolectan los parámetros de los datos recibidos
-        data_content = data['content']
-        data_max_tokens = data['max_tokens']
+        # se recolectan los parámetros de los datos recibidos (usar .get para evitar KeyError)
+        data_content = data.get('content', '')
+        data_max_tokens = data.get('max_tokens', getattr(self.llama, 'max_tokens', 1024))
         new_prompt = data.get('new_prompt')
 
         # si se especifica un nuevo prompt, es porque se trata de una conversación nueva; si no, se está continuando una conversación
@@ -100,7 +101,13 @@ class Llama3Server:
         # se deja al LLM que procese la consulta y genere una respuesta
         try:
             print("Procesando consulta...")
-            answer = self.llama(*data_content, tokens=data_max_tokens)
+            # si content es lista, expandir como argumentos; si no, pasar como único argumento
+            if isinstance(data_content, list):
+                answer = self.llama(*data_content, tokens=data_max_tokens)
+            else:
+                answer = self.llama(data_content, tokens=data_max_tokens)
+
+            # normalizar numpy arrays dentro de la respuesta
             if isinstance(answer, list):
                 print("Respuesta generada. Enviando al cliente...")
                 new_answer = list()
@@ -111,7 +118,7 @@ class Llama3Server:
 
         except Exception as ex:
             logging.error(f"Error: {ex}")
-            return jsonify({'response': f'Runtime Error: {ex}', 'status_code': 500, 'query': data, 'session_id': session})
+            return jsonify({'response': f'Runtime Error: {ex}', 'status_code': 500, 'query': data, 'session_id': session}), 500
 
         # se prepara la respuesta a enviar al cliente
         response = {
@@ -137,17 +144,23 @@ class Llama3Server:
                 - True and username if the key is valid.
                 - False and '>Unknown<' if the key is invalid.
         """
-        # se abre el archivo de claves y se lee su contenido:
-        with open(__keys_path__, 'r') as f:
-            available_keys = f.read().split('\n')
+        # se abre el archivo de claves y se lee su contenido de forma segura
+        try:
+            with open(__keys_path__, 'r', encoding='utf-8') as f:
+                lines = [ln.strip() for ln in f.readlines() if ln.strip()]
+        except FileNotFoundError:
+            logging.error(f"API keys file not found: {__keys_path__}")
+            return False, ">Unknown<"
 
         # si la clave corresponde con alguna de las claves disponibles (clave:usuario), se devuelve True y el nombre de usuario
-        for available_key_name in available_keys:
-            available_key, username = available_key_name.split(':')
+        for available_key_name in lines:
+            if ':' not in available_key_name:
+                continue
+            available_key, username = available_key_name.split(':', 1)
             if key == available_key:
                 return True, username
-        else:
-            return False, ">Unknown<"
+
+        return False, ">Unknown<"
 
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 #                                                                       #
