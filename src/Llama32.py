@@ -64,7 +64,8 @@ class Llama3:
         self.tokenizer = None
         self.task = 'generation'
         self.messages: list = list()
-        self.prompt: dict = {}
+        # inicializar prompt por defecto para evitar KeyError si no se llama a set_prompt()
+        self.prompt: dict = {'role': 'system', 'content': ''}
         self.max_tokens = max_tokens
         self.pooling = pooling
         self.gpu = gpu
@@ -85,7 +86,7 @@ class Llama3:
             tokenizer = self.tokenizer,
             model = __llama_path__,
             torch_dtype = torch.bfloat16, # float32 para mayor eficiencia en GPU
-            device_map = 'cpu', # 0 para usar la GPU si está disponible, 'cpu' para usar la CPU
+            device_map = 0, # 0 para usar la GPU si está disponible, 'cpu' para usar la CPU
         )
         logging.info("Modelo Llama3.2 cargado para generación de texto.")
 
@@ -104,7 +105,7 @@ class Llama3:
         logging.info(f'Prompt establecido: {prompt}')
 
 
-    def text_generation_task(self, text: list[str], max_tokens):
+    def text_generation_task(self, text, max_tokens: int):
         """
         Handles a text query and generates a response from the model.
         Args:
@@ -113,26 +114,47 @@ class Llama3:
         Returns:
             str: Generated text response from the model.
         """
-        # el rol de esta transacción es "user" y el contenido la pregunta recibida
-        self.messages.append({'role': 'user', 'content': text})
+        # normalizar entrada: aceptar str o lista/tupla de strings
+        if isinstance(text, (list, tuple)):
+            user_content = " ".join(map(str, text))
+        else:
+            user_content = str(text)
 
-        # si el modelo ya tiene 10 mensajes, para no perder funcionamiento,
-        # se eliminan mensajes menos el prompt y los últimos mensajes pregunta-respuesta
+        # asegurar que prompt y messages están inicializados correctamente
+        if not isinstance(self.prompt, dict) or 'role' not in self.prompt or 'content' not in self.prompt:
+            self.prompt = {'role': 'system', 'content': ''}
+        if not self.messages:
+            self.messages = [self.prompt]
+
+        # añadir mensaje de usuario
+        self.messages.append({'role': 'user', 'content': user_content})
+
+        # podar conversación si excede el máximo
         if len(self.messages) > MAX_MESSAGES:
             self.messages = [self.prompt] + self.messages[-20:]
 
-        # se convierte la lista de mensajes a un único texto plano para el modelo
-        acc_prompt = "\n".join([f"{m['role']}: {m['content']}" for m in self.messages])
+        # construir prompt acumulado de forma segura
+        parts = []
+        for m in self.messages:
+            role = m.get('role', 'unknown')
+            content = m.get('content', '')
+            parts.append(f"{role}: {content}")
+        acc_prompt = "\n".join(parts)
 
-        # se genera la respuesta del modelo y se almacena el texto generado
+        # comprobar pipeline
+        if self.pipe is None:
+            logging.error('Pipeline no inicializado antes de generar texto')
+            raise RuntimeError('Pipeline no inicializado')
+
+        # generar respuesta
         response = self.pipe(acc_prompt, max_new_tokens=max_tokens)[0]
-        generated_text = response["generated_text"].strip()
+        generated_text = response.get('generated_text', '').strip()
 
-        # se recortan los mensajes para devolver únicamente la respuesta del modelo
+        # recortar prompt si el modelo lo antepuso
         if generated_text.startswith(acc_prompt):
             generated_text = generated_text[len(acc_prompt):].strip()
 
-        # se añade el mensaje de la respuesta del modelo a la lista de mensajes y se devuelve dicha respuesta
+        # almacenar la respuesta y devolverla
         self.messages.append({'role': 'assistant', 'content': generated_text})
         return generated_text
 
@@ -148,8 +170,17 @@ class Llama3:
         """
         # se obtiene el número máximo de tokens de los argumentos
         max_tokens = kwargs.get("tokens", self.max_tokens)
-        # se llama directamente a la tarea de generación de texto con los argumentos recibidos
-        return self.text_generation_task(list(args), max_tokens)
+
+        # normalizar los argumentos posicionales a una única cadena
+        if not args:
+            text = ""
+        elif len(args) == 1:
+            text = args[0]
+        else:
+            text = " ".join(map(str, args))
+
+        # llamar a la función principal de generación
+        return self.text_generation_task(text, max_tokens)
 
     def __repr__(self):
         """
