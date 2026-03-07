@@ -39,8 +39,6 @@ import re  # limpiar y procesar texto mediante expresiones regulares
 import threading  # manejar tareas simultáneamente
 import pickle  # guardar o cargar los objetos serializados (por ejemplo, los índices)
 import requests  # hacer peticiones al servidor Flask que dispone del LLM
-from googletrans import Translator  # traducir el texto de la pregunta siempre al inglés para una mejor interactividad con el modelo Llama3.2
-import asyncio  # manejar la ejecución de código asíncrono, en este caso para la traducción
 
 import warnings # manejar las advertencias de la librería transformers
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -113,21 +111,28 @@ class Llama32CLI:
 
             # se utiliza un prompt predefinido para enviar al LLM, que incluye lo que debe de hacer y el contexto
             prompt = (
-                "You are an assistant specialized in the analysis of scientific and pharmaceutical literature. "
-                "Your role is to help a research team extract useful, relevant, and verifiable information from the following context, "
-                "which comes from academic or technical articles.\n\n"
-                f"Context:\n{contexto}\n\n"
-                "Guidelines for answering:\n"
-                "- Accurately understand the intent of the question.\n"
-                "- Respond only with the information contained in the context provided above.\n"
-                "- If the question cannot be answered with the available data, clearly state that there is not enough information.\n"
-                "- Do not fabricate, assume, or extrapolate beyond the given content.\n"
-                "- Use technical, clear, and precise language appropriate for researchers.\n"
-                "- If appropriate, organize the answer into sections or key points to improve understanding.\n"
-                "- Always cite the source number [Source X] when using information from the context.\n\n"
-                "Response:"
-            )
+                "You are a research assistant specialized in scientific and pharmaceutical literature analysis. "
+                "Your task is to help researchers extract accurate and verifiable information from the provided context.\n"
+                "The context below contains excerpts retrieved from scientific or technical documents. "
+                "Each excerpt may be labeled with a source identifier such as [Source X].\n"
 
+                "=== BEGIN CONTEXT ===\n"
+                f"{contexto}\n"
+                "=== END CONTEXT ===\n\n"
+
+                "Instructions:\n"
+                "1. Carefully read the question and identify the relevant information within the context.\n"
+                "2. Use ONLY the information present in the context above.\n"
+                "3. Do NOT invent, infer, or assume information that is not explicitly stated.\n"
+                "4. If the context does not contain enough information to answer the question, say clearly: "
+                "'The provided context does not contain sufficient information to answer this question.'\n"
+                "5. When information is taken from the context, cite the source using the format [Source X].\n"
+                "6. If multiple sources support the answer, cite all relevant sources.\n"
+                "7. Use clear, precise, and technical language suitable for researchers.\n"
+                "8. When useful, structure the response using short paragraphs or bullet points.\n"
+                "9. Always answer in English.\n\n"
+                "Now, focus on answering the user's question based on the context."
+            )
 
         # se prepara el cuerpo de la petición al servidor (pooling y task no necesarios, al ser una petición de generación de texto)
         # el contenido será la query, los tokens máximos de respuesta serán 1024 y el prompt el creado anteriormente
@@ -430,16 +435,13 @@ class Llama3GUI:
 
     def process_question_in_thread(self, question):
         """
-        Processes user question in a separate thread: translates it and sends to server.
+        Processes user question in a separate thread
         Args:
             question (str): Original user question in Spanish.
         """
-        # en primer lugar, se traduce la pregunta al inglés, por si acaso
-        translator = Translator()
-        tr_question = asyncio.run(translator.translate(question, dest='en')).text
 
         # se llama a la función que realiza la petición al servidor que dispone del LLM para formar la respuesta
-        response = self.client.process_request(tr_question)
+        response = self.client.process_request(question)
         self.last_sources = self.client.last_sources
         self.last_docs = self.client.last_docs
 
@@ -611,8 +613,8 @@ class Llama3GUI:
                 # se escribe el historial de la conversación
                 for entry in self.conversation_log:
                     f.write(f"[{entry['timestamp']}]\n\n")
-                    f.write(f"Tú: {entry['question']}\n\n")
-                    f.write(f"Asistente: {entry['answer']}\n\n\n")
+                    f.write(f"Pregunta: {entry['question']}\n\n")
+                    f.write(f"Respuesta: {entry['answer']}\n\n\n")
 
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo guardar la conversación:\n{e}")

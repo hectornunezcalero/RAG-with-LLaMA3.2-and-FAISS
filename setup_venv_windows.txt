@@ -13,7 +13,7 @@ Desktop/main_dir: python -m venv venv
 
 como admin: Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
 
-Desktop/main_dir: ./venv/Scripts/Activate.ps1
+Desktop/main_dir: venv\Scripts\activate
 
 Desktop/main_dir: pip install -r requirements.txt
 

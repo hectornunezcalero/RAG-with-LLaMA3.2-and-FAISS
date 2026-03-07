@@ -169,7 +169,7 @@ def create_faiss_db():
         FAISS: Initialized FAISS database instance.
     """
     # en primer lugar, se crean los índice-vector, el docstore y las relaciones índice-vector <-> docstore
-    dimension = len(embedding_model.embed_query("test")) # dimensión vectorial para el modelo de embeddings (384 dimensiones para 'all-MiniLM-L12-v2')
+    dimension = len(embedding_model.embed_query("test")) # dimensión vectorial para el modelo de embeddings (384 dimensiones para 'BAAI/bge-small-en-v1.5')
     index = faiss.IndexFlatIP(dimension) # objeto faiss con los índices y vectores N-dimensionales de la base de datos
     """ Estructura que tendrá index:
     0 : [0.19, 0.21, 0.36, ...]  # embedding del chunk 0

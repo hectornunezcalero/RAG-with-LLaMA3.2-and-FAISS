@@ -27,11 +27,12 @@
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
 import torch  # manejar el modelo en GPU o CPU
-from transformers import pipeline, AutoTokenizer  # cargar el pipeline y tokenizador del modelo de embeddings de Hugging Face
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM  # cargar el pipeline y tokenizador del modelo de embeddings de Hugging Face
 import logging  # controlar y personalizar la salida de mensajes, avisos y errores
 
 # se establece el número máximo de mensajes que se pueden manejar en una conversación (1 prompt + 10 preguntas + 10 respuestas)
 MAX_MESSAGES = 21
+MAX_HISTORY = MAX_MESSAGES - 1
 
 # se establece la ruta del modelo Llama3.2
 __llama_path__ = "../model"
@@ -73,22 +74,36 @@ class Llama3:
         # se prepara el pipeline del modelo Llama3.2
         self._init_pipeline()
 
+
     def _init_pipeline(self):
         """
         Initializes the text generation pipeline and tokenizer for Llama3.2.
         """
-        self.tokenizer = AutoTokenizer.from_pretrained(__llama_path__)
-        self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        # el nuevo pipeline se crea con el tokenizador, modelo, formato de tensores y unidad para llevarlo a cabo
-        self.pipe = pipeline(
-            "text-generation",
-            tokenizer = self.tokenizer,
-            model = __llama_path__,
-            torch_dtype = torch.bfloat16, # float32 para mayor eficiencia en GPU
-            device_map = 0 if self.gpu else "cpu", # 0 para usar la GPU si está disponible, 'cpu' para usar la CPU
+        # comprobar si hay GPU disponible
+        use_gpu = self.gpu and torch.cuda.is_available()
+
+        # cargar tokenizador
+        self.tokenizer = AutoTokenizer.from_pretrained(__llama_path__)
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+
+        # cargar modelo
+        model = AutoModelForCausalLM.from_pretrained(
+            __llama_path__,
+            torch_dtype=torch.float16 if use_gpu else torch.float32,
+            low_cpu_mem_usage=True
         )
-        logging.info("Modelo Llama3.2 cargado para generación de texto.")
+
+        # crear pipeline
+        self.pipe = pipeline(
+            task="text-generation",
+            model=model,
+            tokenizer=self.tokenizer,
+            device=0 if use_gpu else -1
+        )
+
+        logging.info(f"Modelo Llama3.2 cargado en {'GPU' if use_gpu else 'CPU'}.")
 
 
     def set_prompt(self, prompt: str):
@@ -131,7 +146,7 @@ class Llama3:
 
         # podar conversación si excede el máximo
         if len(self.messages) > MAX_MESSAGES:
-            self.messages = [self.prompt] + self.messages[-20:]
+            self.messages = [self.prompt] + self.messages[-MAX_HISTORY:]
 
         # construir prompt acumulado de forma segura
         parts = []
@@ -146,8 +161,15 @@ class Llama3:
             logging.error('Pipeline no inicializado antes de generar texto')
             raise RuntimeError('Pipeline no inicializado')
 
-        # generar respuesta
-        response = self.pipe(acc_prompt, max_new_tokens=max_tokens)[0]
+        # generar la respuesta
+        response = self.pipe(
+            acc_prompt, # prompt acumulado con el historial de la conversación
+            max_new_tokens=max_tokens, # número máximo de tokens a generar
+            do_sample=False, # desactivar muestreo para obtener la respuesta más probable (determinista)
+            temperature=0.2, # temperatura para el muestreo
+            top_p=0.9 # umbral para el muestreo nucleus
+        )[0] # la función pipe devuelve una lista de resultados, se toma el primero
+        
         generated_text = response.get('generated_text', '').strip()
 
         # recortar prompt si el modelo lo antepuso
