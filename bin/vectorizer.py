@@ -37,16 +37,20 @@ import logging  # controlar y personalizar la salida de mensajes, avisos y error
 
 TXT_ROOT_PATH = "../data/txtdata"
 DATABASE_PATH = "../data/vector_db"
-CHUNK_LEN = 180
-OVERLAP = 30
+CHUNK_LEN = 350
+OVERLAP = 80
 
 # se silencia el warning que cree que no se va a chunkear y se va a exceder el límite de tokens
 logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
 
-# se carga el modelo tokenizador y vectorizador (all-MiniLM-L12-v2 usa pooling 'mean' para la generación de los embeddings semánticos)
-tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L12-v2")
-embedding_model = HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2')
+# tokenizador del modelo de embeddings
+tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-small-en-v1.5")
 
+# modelo de embeddings
+embedding_model = HuggingFaceEmbeddings(
+    model_name="BAAI/bge-small-en-v1.5",
+    encode_kwargs={"normalize_embeddings": True}
+)
 
 def chunker(text, chunk_len, overlap):
     """
@@ -74,7 +78,8 @@ def chunker(text, chunk_len, overlap):
     # del texto original, los chunks serán 180 tokens seguidos donde los 40 primeros son el solapamiento
     # con el chunk anterior para tener contexto y no perder información, siendo los 140 siguientes es el resto de información
     chunks = []
-    for i in range(0, len(tokens_ids), chunk_len - overlap):
+    step = max(1, chunk_len - overlap)
+    for i in range(0, len(tokens_ids), step):
         # se almacenan los offsets de los tokens del chunk actual
         chunk_offsets = tokens_offsets[i:chunk_len + i]
         if not chunk_offsets:
@@ -129,9 +134,11 @@ def vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, output):
                 #si no existe, se procede a vectorizar el archivo
                 with open(full_path, "r", encoding="utf-8") as f:
                     content = f.read()
+                    title = os.path.basename(rel_path).replace(".txt","")
+                    full_content = f"Document title: {title}\n\n{content}"
 
                 # se recurre al chunkeo del contenido del archivo
-                chunks = chunker(content, CHUNK_LEN, OVERLAP)
+                chunks = chunker(full_content, CHUNK_LEN, OVERLAP)
 
                 # por cada chunk, se crea un nuevo objeto Document con su contenido y metadatos
                 for i, chunk in enumerate(chunks):
@@ -163,7 +170,7 @@ def create_faiss_db():
     """
     # en primer lugar, se crean los índice-vector, el docstore y las relaciones índice-vector <-> docstore
     dimension = len(embedding_model.embed_query("test")) # dimensión vectorial para el modelo de embeddings (384 dimensiones para 'all-MiniLM-L12-v2')
-    index = faiss.IndexFlatL2(dimension) # objeto faiss con los índices y vectores N-dimensionales de la base de datos
+    index = faiss.IndexFlatIP(dimension) # objeto faiss con los índices y vectores N-dimensionales de la base de datos
     """ Estructura que tendrá index:
     0 : [0.19, 0.21, 0.36, ...]  # embedding del chunk 0
     1 : [0.41, 0.22, 0.57, ...]  # embedding del chunk 1

@@ -27,7 +27,6 @@
 #                                                                       #
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
-from transformers import AutoTokenizer  # cargar el tokenizador del modelo de embeddings de Hugging Face
 from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinada para las búsquedas por similitud
 from langchain_huggingface import HuggingFaceEmbeddings  # usar el modelo de embeddings de Hugging Face que convierte los chunks en vectores semánticos
 import faiss  # crear y consultar la base de datos vectorial FAISS (versión CPU)
@@ -59,8 +58,11 @@ index = faiss.read_index(f"{VECTOR_DB_PATH}/index.faiss")
 with open(f"{VECTOR_DB_PATH}/index.pkl", "rb") as f:
     docstore, index_to_docstore_id = pickle.load(f)
 
-# se carga el modelo de embeddings, que con ello y los archivos anteriores se abre la base de datos FAISS
-embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L12-v2")
+# modelo de embeddings
+embedding_model = HuggingFaceEmbeddings(
+    model_name="BAAI/bge-small-en-v1.5",
+    encode_kwargs={"normalize_embeddings": True}
+)
 faiss_db = FAISS(index=index, docstore=docstore, index_to_docstore_id=index_to_docstore_id, embedding_function=embedding_model)
 
 
@@ -94,29 +96,36 @@ class Llama32CLI:
         # si se hace una pregunta relativa a la misma sesión, se reutiliza el contexto de la primera pregunta
         prompt = None
 
-        # si se trata de una nueva sesión, se encuentran los 5 chunks más relacionados de únicamente la primera query dentro de la base de datos,
+        # si se trata de una nueva sesión, se encuentran los 6 chunks más relacionados de únicamente la primera query dentro de la base de datos,
         # devolviéndose los objetos 'Document' correspondientes del docstore.
         if self.session_id == "0":
-            self.last_docs = faiss_db.similarity_search(question, k=5)
+            query = f"Represent this sentence for searching relevant passages: {question}"
+            self.last_docs = faiss_db.similarity_search(query, k=8)
             print(f"Chunks rescatados por similitud: {len(self.last_docs)}")
             # se crea el contexto una sola vez
-            self.contexto = "\n\n".join(doc.page_content for doc in self.last_docs)
+            context_parts = []
+            for i, doc in enumerate(self.last_docs):
+                context_parts.append(f"[Source {i+1}] chunk {doc.metadata['chunk_index']}: {doc.page_content}")
+
+            self.contexto = "\n\n".join(context_parts)
             contexto = self.contexto
             docs = self.last_docs
 
             # se utiliza un prompt predefinido para enviar al LLM, que incluye lo que debe de hacer y el contexto
             prompt = (
-                "Eres un asistente especializado en análisis de literatura científica y farmacéutica. "
-                "Tu función es ayudar a un equipo de investigación a extraer información útil, relevante y verificable a partir del siguiente contexto, "
-                "que procede de artículos académicos o técnicos.\n\n"
-                f"Contexto:\n{contexto}\n\n"
-                "Directrices para responder:\n"
-                "- Comprende con precisión la intención de la pregunta.\n"
-                "- Responde exclusivamente con la información contenida en el contexto anteriormente proporcionado.\n"
-                "- Si la pregunta no puede responderse con los datos disponibles, indica claramente que no hay suficiente información.\n"
-                "- No inventes, asumas ni extrapoles más allá del contenido dado.\n"
-                "- Utiliza un lenguaje técnico, claro y preciso, adecuado para investigadores.\n"
-                "- Si procede, organiza la respuesta en secciones o puntos clave para mejorar su comprensión.\n"
+                "You are an assistant specialized in the analysis of scientific and pharmaceutical literature. "
+                "Your role is to help a research team extract useful, relevant, and verifiable information from the following context, "
+                "which comes from academic or technical articles.\n\n"
+                f"Context:\n{contexto}\n\n"
+                "Guidelines for answering:\n"
+                "- Accurately understand the intent of the question.\n"
+                "- Respond only with the information contained in the context provided above.\n"
+                "- If the question cannot be answered with the available data, clearly state that there is not enough information.\n"
+                "- Do not fabricate, assume, or extrapolate beyond the given content.\n"
+                "- Use technical, clear, and precise language appropriate for researchers.\n"
+                "- If appropriate, organize the answer into sections or key points to improve understanding.\n"
+                "- Always cite the source number [Source X] when using information from the context.\n\n"
+                "Response:"
             )
 
 

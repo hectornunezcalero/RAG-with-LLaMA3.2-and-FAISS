@@ -86,7 +86,7 @@ class Llama3:
             tokenizer = self.tokenizer,
             model = __llama_path__,
             torch_dtype = torch.bfloat16, # float32 para mayor eficiencia en GPU
-            device_map = 0, # 0 para usar la GPU si está disponible, 'cpu' para usar la CPU
+            device_map = 0 if self.gpu else "cpu", # 0 para usar la GPU si está disponible, 'cpu' para usar la CPU
         )
         logging.info("Modelo Llama3.2 cargado para generación de texto.")
 
