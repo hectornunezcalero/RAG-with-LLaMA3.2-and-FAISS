@@ -49,7 +49,10 @@ tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-small-en-v1.5")
 # modelo de embeddings
 embedding_model = HuggingFaceEmbeddings(
     model_name="BAAI/bge-small-en-v1.5",
-    encode_kwargs={"normalize_embeddings": True}
+    encode_kwargs={
+        "normalize_embeddings": True, 
+        "show_progress_bar": True
+    }
 )
 
 def chunker(text, chunk_len, overlap):
