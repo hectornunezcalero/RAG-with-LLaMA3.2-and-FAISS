@@ -37,7 +37,7 @@ import logging  # controlar y personalizar la salida de mensajes, avisos y error
 
 TXT_ROOT_PATH = "../data/txtdata"
 DATABASE_PATH = "../data/vector_db"
-CHUNK_LEN = 350
+CHUNK_LEN = 400
 OVERLAP = 80
 
 # se silencia el warning que cree que no se va a chunkear y se va a exceder el límite de tokens
@@ -49,8 +49,10 @@ tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-small-en-v1.5")
 # modelo de embeddings
 embedding_model = HuggingFaceEmbeddings(
     model_name="BAAI/bge-small-en-v1.5",
+    model_kwargs={"device": "cpu"},
     encode_kwargs={
-        "normalize_embeddings": True, 
+        "normalize_embeddings": True,
+        "batch_size": 32
     }
 )
 
