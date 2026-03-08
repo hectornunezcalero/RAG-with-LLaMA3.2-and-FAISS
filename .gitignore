@@ -19,3 +19,5 @@ data/vector_db/*
 
 model/
 !model/.gitkeep
+
+models/

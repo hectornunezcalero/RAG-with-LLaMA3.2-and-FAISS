@@ -6,7 +6,8 @@ langchain==0.3.13                  # usado por el vectorizer y cliente para usar
 langchain-community==0.3.13        # usado por el vectorizer y cliente para cargar módulos comunitarios como FAISS y el docstore
 langchain-huggingface==0.1.2       # usado por el vectorizer y cliente para generar y usar embeddings con el modelo de Hugging Face
 transformers==4.47.0               # usado por el vectorizer para cargar el tokenizador del modelo de embeddings de Hugging Face
-torch==2.6.0                       # backend PyTorch usado por cliente y vectorizer para ejecutar modelos de embeddings
+--extra-index-url https://download.pytorch.org/whl/cu126  # necesario para instalar la versión de PyTorch compatible con CUDA 12.6
+torch==2.6.0+cu126                 # backend PyTorch usado por cliente y vectorizer para ejecutar modelos de embeddings
 accelerate==1.2.0                  # usado por el servidor para optimizar la carga y ejecución de modelos de Hugging Face
 numpy>=2.0.0                       # usado por el servidor para manejo numérico que conlleve arrays
 PyMuPDF==1.25.0                    # (fitz) usado por el data_extractor para extraer texto de archivos PDF
