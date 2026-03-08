@@ -333,7 +333,7 @@ class Llama3GUI:
         self.chat_text.tag_configure("label_assistant", foreground="#4a7c59", font=("Segoe UI", 11, "bold"))
         self.chat_text.tag_configure("user", justify="left", background="#e6f4ff", font=("Segoe UI", 11, "bold"), lmargin1=10, lmargin2=10, rmargin=150, spacing3=4)
         self.chat_text.tag_configure("assistant", justify="left", font=("Segoe UI", 11), lmargin1=5, lmargin2=10, rmargin=10, spacing3=4)
-        self.chat_text.tag_configure("thinking", justify="right", font=("Segoe UI", 11, "italic"), lmargin1=150, lmargin2=10, rmargin=10, spacing3=4)
+        self.chat_text.tag_configure("thinking", justify="left", font=("Segoe UI", 11, "italic"), lmargin1=10, lmargin2=10, rmargin=150, spacing3=4)
 
         # se crea un marco para los botones restantes justo debajo de la anterior ventana
         bottom_button_frame = tk.Frame(main_frame, bg=bg_color)
@@ -420,7 +420,7 @@ class Llama3GUI:
         self.chat_text.insert(tk.END, f"{timestamp}\n", "timestamp")
         self.chat_text.insert(tk.END, " Tú: ", "label_user")
         self.chat_text.insert(tk.END, f"{question}\n\n", "bold_user")
-        self.chat_text.insert(tk.END, "Pensando...\n\n", ("thinking",))
+        self.chat_text.insert(tk.END, "Thinking...\n\n", ("thinking",))
         self.chat_text.tag_add("thinking_tag", "end-3l", "end-1l")
         self.chat_text.config(state="disabled")
 

@@ -27,6 +27,7 @@
 # - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - x - #
 
 from transformers import AutoTokenizer  # cargar el tokenizador del modelo de embeddings de Hugging Face
+from langchain.text_splitter import RecursiveCharacterTextSplitter  # splitter semántico que respeta párrafos, frases y signos de puntuación
 from langchain_community.vectorstores import FAISS  # instancia para base de datos vectorial FAISS destinada a las búsquedas por similitud
 from langchain.schema import Document  # estructura estándar 'Document' para cada chunk: texto + metadatos
 from langchain_community.docstore.in_memory import InMemoryDocstore  # almacenar en memoria RAM de esos objetos 'Document'
@@ -37,14 +38,23 @@ import logging  # controlar y personalizar la salida de mensajes, avisos y error
 
 TXT_ROOT_PATH = "../data/txtdata"
 DATABASE_PATH = "../data/vector_db"
-CHUNK_LEN = 400
-OVERLAP = 80
+CHUNK_LEN = 400   # tokens por chunk (límite del modelo de embeddings: 512)
+OVERLAP = 80      # tokens de solapamiento entre chunks
 
 # se silencia el warning que cree que no se va a chunkear y se va a exceder el límite de tokens
 logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
 
-# tokenizador del modelo de embeddings
+# tokenizador del modelo de embeddings (usado por el text splitter para contar tokens exactos)
 tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-small-en-v1.5")
+
+# splitter semántico: divide por párrafos → frases → palabras → caracteres,
+# respetando el límite de tokens del modelo de embeddings (512 max, se usan 400 para margen)
+text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
+    tokenizer,
+    chunk_size=CHUNK_LEN,
+    chunk_overlap=OVERLAP,
+    separators=["\n\n", "\n", ". ", "! ", "? ", "; ", ", ", " ", ""]
+)
 
 # modelo de embeddings
 embedding_model = HuggingFaceEmbeddings(
@@ -56,50 +66,17 @@ embedding_model = HuggingFaceEmbeddings(
     }
 )
 
-def chunker(text, chunk_len, overlap):
+def chunker(text):
     """
-    Splits input text into overlapping chunks based on token counts.
+    Splits input text into semantically coherent chunks respecting token limits.
+    Splits preferring paragraph, sentence and punctuation boundaries before
+    resorting to word or character boundaries.
     Args:
         text (str): Original text to split.
-        chunk_len (int): Maximum number of tokens per chunk.
-        overlap (int): Number of tokens to overlap between consecutive chunks.
     Returns:
         List[str]: List of text chunks extracted from the original text.
     """
-    # 'encoding' recopila los IDs de los tokens del modelo y los offsets de cada token en el texto para su posterior uso
-    encoding = tokenizer(text, return_offsets_mapping=True, add_special_tokens=False)
-
-    tokens_ids = encoding["input_ids"]
-    """ Estructura de tokens_ids:
-        "La Universidad de Alcalá posee..." : [101, 1045, 2572, 1037, 2143, ...]
-    """
-
-    tokens_offsets = encoding["offset_mapping"]
-    """ Estructura de tokens_offsets:
-        "La Universidad de Alcalá posee..." : [(0, 1), (2, 12), (13, 14), (15, 20), (21, 25), ...]
-    """
-
-    # del texto original, los chunks serán 180 tokens seguidos donde los 40 primeros son el solapamiento
-    # con el chunk anterior para tener contexto y no perder información, siendo los 140 siguientes es el resto de información
-    chunks = []
-    step = max(1, chunk_len - overlap)
-    for i in range(0, len(tokens_ids), step):
-        # se almacenan los offsets de los tokens del chunk actual
-        chunk_offsets = tokens_offsets[i:chunk_len + i]
-        if not chunk_offsets:
-            continue
-
-        # se entiende como 'start' al primer elemento del primer offset del chunk (comienzo del primer token)
-        start = chunk_offsets[0][0]
-        # se establece como 'end' al último elemento del último offset del token del chunk
-        end = chunk_offsets[-1][1]
-        # se forma el texto del chunk
-        chunk_text = text[start:end].strip()
-
-        if chunk_text and len(chunk_text) > 0:
-            chunks.append(chunk_text)
-
-    return chunks
+    return text_splitter.split_text(text)
 
 
 def vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, output):
@@ -141,8 +118,8 @@ def vectorize_new_txt_files(texts_dir, keep_documents, faiss_db, output):
                     title = os.path.basename(rel_path).replace(".txt","")
                     full_content = f"Document title: {title}\n\n{content}"
 
-                # se recurre al chunkeo del contenido del archivo
-                chunks = chunker(full_content, CHUNK_LEN, OVERLAP)
+                # se recurre al chunkeo semántico del contenido del archivo
+                chunks = chunker(full_content)
 
                 # por cada chunk, se crea un nuevo objeto Document con su contenido y metadatos
                 for i, chunk in enumerate(chunks):
