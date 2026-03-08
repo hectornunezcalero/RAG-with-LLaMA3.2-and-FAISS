@@ -170,23 +170,45 @@ class Llama3:
         else:
             input_ids = input_encoding.to(device)
 
-        # preparar kwargs para generate incluyendo attention_mask
+        # truncar prompt si excede la ventana del modelo
+        max_pos = getattr(self.model.config, "max_position_embeddings", None) or getattr(self.tokenizer, "model_max_length", None)
+        if max_pos is not None:
+            max_input_len = max(1, int(max_pos) - int(max_tokens))
+            if input_ids.dim() == 1:
+                input_seq_len = input_ids.shape[0]
+            else:
+                input_seq_len = input_ids.shape[-1]
+            if input_seq_len > max_input_len:
+                if input_ids.dim() == 1:
+                    input_ids = input_ids[-max_input_len:]
+                else:
+                    input_ids = input_ids[:, -max_input_len:]
+
+        # asegurar input_ids 2D
+        if input_ids.dim() == 1:
+            input_ids = input_ids.unsqueeze(0)
+
+        # attention_mask correcto: True donde no hay padding
+        attention_mask = input_ids.ne(self.tokenizer.pad_token_id)
+
         generate_kwargs = {
             "input_ids": input_ids,
-            "attention_mask": torch.ones_like(input_ids)
+            "attention_mask": attention_mask
         }
 
         # generar con el modelo directamente (más robusto para modelos instruct)
-        outputs = self.model.generate(
-            **generate_kwargs,
-            max_new_tokens=max_tokens,
-            do_sample=True,
-            temperature=0.2,
-            top_p=0.9,
-            repetition_penalty=1.1,
-            pad_token_id=self.tokenizer.eos_token_id,
-            eos_token_id=self.tokenizer.eos_token_id
-        )
+        with torch.no_grad():
+            outputs = self.model.generate(
+                **generate_kwargs,
+                max_new_tokens=max_tokens,
+                do_sample=True,
+                temperature=0.2,
+                top_p=0.9,
+                repetition_penalty=1.1,
+                pad_token_id=self.tokenizer.eos_token_id,
+                eos_token_id=self.tokenizer.eos_token_id,
+                use_cache=True
+            )
 
         # obtener solo los tokens generados (sin prompt) y decodificar
         generated_tokens = outputs[0][input_ids.shape[-1]:]
